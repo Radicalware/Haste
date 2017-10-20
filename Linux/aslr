@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Programed by Scourge
+# Licence: GPLv3
+
+if [ $# -gt 0 ];then
+	if [ "$1" == '0' ] || [ "$1" == '1' ] || [ "$1" == '2' ]; then
+		echo "$1" | sudo tee /proc/sys/kernel/randomize_va_space
+	else
+		echo "Use the optin 0, 1 or 2; Higher is more secure";exit
+	fi
+fi
+
+echo -n "ASLR -> ";
+
+let aslr=$(
+    sysctl -a 2>/dev/null   | 
+    grep randomize_va_space | 
+    awk '{print $3}'
+)
+
+
+case $aslr in
+    0) echo "Disabled";;
+    1) echo "Insufficied";;
+    2) echo "OK";;
+    *) echo "2" | sudo tee /proc/sys/kernel/randomize_va_space; echo "You typed in an incorrect option, use 0,1, or 2"; echo "ASLR was set to default";;
+    
+esac
