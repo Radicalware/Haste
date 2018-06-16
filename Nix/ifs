@@ -6,8 +6,13 @@
 route=$(echo all)
 if (( $# == 2 )); then
     route=$(echo one)
-elif (( $# == "$1" )); then
-    echo "avs '<someting to search for in files>'"
+elif (( $# == 0 )); then
+    echo "ifs '<someting to search for in files>'"
+    echo "searches every file in the tree"
+    echo
+    echo "ifs  <someting to search for in files> <target file>" 
+    echo "searches only the target file"
+    echo
     exit
 fi
 
@@ -50,6 +55,7 @@ function looper
 
 }
 
+
 if [ "$route" == "all" ];then
     for file in $(find ./ -type f );do
         # 1st test action and silence input, 2nd if the action succeeds, run the script
@@ -58,7 +64,7 @@ if [ "$route" == "all" ];then
         looper $1 $file
     done
 else
-    file=$(echo $2)
+    file=$(echo $2 )
     ls -l "$file" > /dev/null 2>&1
     test_fail=$?
     looper $1 $file
