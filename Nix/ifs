@@ -53,7 +53,7 @@ function looper
 
             fi
         else
-            echo "The File is too Big"
+            echo "The File is too big: $file"
         fi
     fi
 
