@@ -19,46 +19,49 @@ fi
 char_limit=1000        # <<<<<<<<<<< set char limit
 
 term_leng=$(stty size| cut -d' ' -f2 ) # same as (tput cols)
-echo;printf "%0.s=" $(seq 1 $term_leng);echo # print = in range 1 to $term_length
-printf "%0.s-" $(seq 1 $term_leng) && echo
+echo;printf "%0.s=" $(seq 1 $term_leng);echo # print = in range 1 to
+$term_length
+printf "%0.s-" $(seq 1 $term_leng);echo
 
 
 function looper 
 {
-    if [ $test_fail -eq 0 ]; then
 
+    # grep -IinE --color=auto $1 $file
+    # -I =  --binary-files=without-match
+    # -i =  ignore case distinctions
+    # -n =  print line number with output lines
+    # -E =  Expressions
+
+    if [ $test_fail -eq 0 ]; then
         file_size=$(ls -l "$file" | awk -F ' ' '{print $5}')
+
         if [ "$file_size" -le 7000000 ];then
             # get line by line grepable content
-            file=$(echo $file | sed 's/zgfialaiavneil/\ /g; s/(/\\(/g; s/)/\\)/g')
 
-            grepped=$(grep -inI "$1" "$file" --color --no-messages )
-            one_line_grepped=$(echo $grepped \
-            | sed 's/^/ajoeaivamnlisa/g; s/\.\//ajoeaivamnlisa/g' \
-            | sed 's/\s/_/g; s/ajoeaivamnlisa/\n/g')
+            content=$(grep -RIinE --color=auto $1 $file)
+            # -I =  --binary-files=without-match
+            # -i =  ignore case distinctions
+            # -n =  print line number with output lines
+            # -E =  Expressions
 
+            if [ "${#content}" -lt "$char_limit" ] && [ "${#content}" -gt 12 ];then
+                printf "%0.s-" $(seq 1 $term_leng)
+                echo -e "\e[33m"
+                echo "  >>> $file <<<"
+                grep -IinE --color=auto $1 $file
 
-            pass=1
-            for line in "$one_line_grepped";do
-                if [ "${#line}" -gt "$char_limit" ] && [ "${#line}" -le 12 ];then
-                    pass=0
-                    break
-                fi
-            done
-            if [ "$pass" -eq 1 ];then
-                grep -inI --no-messages "$1" "$file" --color /dev/null && printf "%0.s-" $(seq 1 $term_leng) && echo
-            else
-                echo "Chars Off: $file"
             fi
+        else
+            echo "The File is too Big"
         fi
     fi
 
 }
 
-
 if [ "$route" == "all" ];then
     for file in $(find ./ -type f );do
-        # 1st test action and silence input, 2nd if the action succeeds, run the script
+        # 1st test action and silence input, 2nd if the action succeeds, runthe script
         ls -l "$file" > /dev/null 2>&1
         test_fail=$?
         looper $1 $file
@@ -69,5 +72,6 @@ else
     test_fail=$?
     looper $1 $file
 fi
-
-printf "%0.s=" $(seq 1 $term_leng);echo;echo # print = in range 1 to $term_length
+printf "%0.s-" $(seq 1 $term_leng);echo
+printf "%0.s=" $(seq 1 $term_leng);echo;echo # print = in range 1 to
+$term_length
