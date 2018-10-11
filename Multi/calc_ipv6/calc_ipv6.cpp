@@ -12,27 +12,49 @@ using std::endl;
 using std::string;
 using std::vector;
 
+
+
+/*
+* Copyright[2018][Joel Leagues aka Scourge]
+* Scourge /at\ protonmail /dot\ com
+* www.Radicalware.com
+* https://www.youtube.com/channel/UCivwmYxoOdDT3GmDnD0CfQA/playlists
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http ://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+
 int main(int argc, char** argv){
 
 	os.set_args(argc, argv);
 
 	if (argc == 1 || os.has_key("-mac") == false || os.has_key("-ipv6") == false){
 		cout << R"(
-input a mac and an IPv6 Addr
+Calculate the IPv6 Link Local Address from a
+1.) -IPv6 known address or -IPv6 network address
+2.) -mac address of your target
 
 	2 required arguments
 
-	-mac <mac>
 	-ipv6 <ipv6>
+	-mac <mac>
+
+example from ippSec's HTB
+./calc_ipv6 -ipv6 fe80:: -mac 00:50:56:aa:8a:25
 
 )";
 		return 1;
 	}
-
-	// MAC          0050:56aa:8a25
-	// network IPv6 fe80::
-	
-	// link local   fe80::250:56ff:feaa:8a25
 
 	string ipv6_start = os.key_value("-ipv6",0);
 	string mac_str  = re::sub(":","",os.key_value("-mac",0));
@@ -52,7 +74,7 @@ input a mac and an IPv6 Addr
 	vector<string> ipv6_vec;
 
 
-	// Normalize IPv6
+	// Normalize IPv6 // This needed atm but I may be adding to this code later.
 	for(string& i : split_ipv6){
 		if(i.size() > 4){ cout << "Invalid IPv6 syntax\n"; return 1; }
 		while(i.size() < 4)
@@ -86,7 +108,6 @@ input a mac and an IPv6 Addr
 
 
 	// Inject MAC into IPv6
-
 	vector<string> mac_segs = re::split(":",mac_str);
 
 	string ipv6_out = ipv6_vec[0]+"::";
