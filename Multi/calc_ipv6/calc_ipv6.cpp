@@ -4,7 +4,6 @@
 #include <bitset>
 
 #include "OS.h"   // Found on "https://github.com/Radicalware"
-#include "ord.h"  // Found on "https://github.com/Radicalware"
 #include "re.h"   // Found on "https://github.com/Radicalware"
 
 using std::cout;
