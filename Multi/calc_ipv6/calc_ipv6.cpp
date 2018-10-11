@@ -60,11 +60,11 @@ example from ippSec's HTB
 
 
 	if (re::scan("::", mac_str) || re::count("::",mac_str) > 5){
-		cout << "It looks like you may have used the -ipv6 in place of the -mac\n";
+		cout << "It looks like you may have used the -ipv6 in place of the -mac\n"; return 1;
 	}
 
 	if((re::count(":", ipv6_start) != 7 && re::scan("::", ipv6_start) == false) || re::count(":",ipv6_start) > 7){
-		cout << "You don't have the right amout of IPv6 segments\n";
+		cout << "You don't have the right amout of IPv6 segments\n"; return 1;
 	}
 
 	vector<string> split_ipv6 = re::split(":",ipv6_start);
