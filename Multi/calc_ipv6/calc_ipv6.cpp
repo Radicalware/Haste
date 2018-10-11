@@ -29,9 +29,10 @@ input a mac and an IPv6 Addr
 		return 1;
 	}
 
-	// link local   fe80::250:56ff:feaa:8a25
 	// MAC          0050:56aa:8a25
-	//              fe80::250:56ff:feaa:8a25
+	// network IPv6 fe80::
+	
+	// link local   fe80::250:56ff:feaa:8a25
 
 	string ipv6_start = os.key_value("-ipv6",0);
 	string mac_str  = re::sub(":","",os.key_value("-mac",0));
