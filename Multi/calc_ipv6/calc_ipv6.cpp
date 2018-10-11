@@ -55,8 +55,8 @@ example from ippSec's HTB
 		return 1;
 	}
 
-	string ipv6_start = os.key_value("-ipv6",0);
-	string mac_str  = re::sub(":","",os.key_value("-mac",0));
+	string ipv6_start = os.key("-ipv6")[0];
+	string mac_str  = re::sub(":","",os.key("-mac")[0]);
 
 
 	if (re::scan("::", mac_str) || re::count("::",mac_str) > 5){
@@ -117,8 +117,8 @@ example from ippSec's HTB
 	ipv6_out = re::sub(":0",":",ipv6_out);
 	
 
-	cout << "mac addr   = " << os.key_value("-mac", 0) << endl;
-	cout << "input IPv6 = " << os.key_value("-ipv6", 0) << endl;
+	cout << "mac addr   = " << os.key("-mac")[0] << endl;
+	cout << "input IPv6 = " << os.key("-ipv6")[0] << endl; // alt method to the above
 	cout << "link local = " << ipv6_out << endl;
 
 	return 0;
