@@ -4,7 +4,9 @@
 #include <bitset>
 
 #include "OS.h"   // Found on "https://github.com/Radicalware"
+#include "SYS.h"  // Found on "https://github.com/Radicalware"
 #include "re.h"   // Found on "https://github.com/Radicalware"
+#include "ord.h"  // Found on "https://github.com/Radicalware"
 
 using std::cout;
 using std::endl;
@@ -32,12 +34,13 @@ using std::vector;
 * limitations under the License.
 */
 
+extern SYS sys;
 
 int main(int argc, char** argv){
 
-	os.set_args(argc, argv);
+	sys.set_args(argc, argv);
 
-	if (argc == 1 || os.has_key("-mac") == false || os.has_key("-ipv6") == false){
+	if (argc == 1 || argc > 5 || !sys("-mac") || !sys("-ipv6")){
 		cout << R"(
 Calculate the IPv6 Link Local Address from a
 1.) -IPv6 known address or -IPv6 network address
@@ -55,9 +58,8 @@ example from ippSec's HTB
 		return 1;
 	}
 
-	string ipv6_start = os.key("-ipv6")[0];
-	string mac_str  = re::sub(":","",os.key("-mac")[0]);
-
+	string ipv6_start = sys["-ipv6"][0];
+	string mac_str  = re::sub(":","",sys["-mac"][0]);
 
 	if (re::scan("::", mac_str) || re::count("::",mac_str) > 5){
 		cout << "It looks like you may have used the -ipv6 in place of the -mac\n"; return 1;
@@ -109,16 +111,14 @@ example from ippSec's HTB
 	// Inject MAC into IPv6
 	vector<string> mac_segs = re::split(":",mac_str);
 
-	string ipv6_out = ipv6_vec[0]+"::";
-	for(string& i: mac_segs)
-		ipv6_out += (i + string(":"));
+	string ipv6_out = ipv6_vec[0] + "::" + ord::join(mac_segs,":");
 
 	ipv6_out.erase(ipv6_out.end()-1);
 	ipv6_out = re::sub(":0",":",ipv6_out);
 	
 
-	cout << "mac addr   = " << os.key("-mac")[0] << endl;
-	cout << "input IPv6 = " << os.key("-ipv6")[0] << endl; // alt method to the above
+	cout << "mac addr   = " << sys["-mac"][0] << endl;
+	cout << "input IPv6 = " << sys["-ipv6"][0] << endl;
 	cout << "link local = " << ipv6_out << endl;
 
 	return 0;
