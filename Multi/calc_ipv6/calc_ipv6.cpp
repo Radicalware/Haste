@@ -100,7 +100,6 @@ int main(int argc, char** argv){
 		}
 
 		string ipv6_addr = ipv6_stream.str().substr(0,ipv6_stream.str().size()-1);
-		cout << ipv6_addr << endl;
 
 		cout << endl;
 		cout << "   Input IPv6 = " << sys[1] << endl;
