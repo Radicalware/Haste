@@ -38,9 +38,9 @@ extern SYS sys;
 
 int help(){
 		cout << R"(
-=================================================================
+===================================================================
 There are 2 values you can calculate. 
-=================================================================
+===================================================================
 1.  The Link Local address via a Network IPv6 Addr + MAC Addr
     * use this when you have a hacked box on the network
       and you want to access it via it's link local addr
@@ -52,7 +52,7 @@ There are 2 values you can calculate.
 
 	./calc_ipv6 -ipv6 fe80:: -mac 00:50:56:aa:8a:25
 
-----------------------------------------------------------------
+------------------------------------------------------------------
 2. Convert the Decimal form of the IPv6 to Hex
     * use this if the SNMP gives away a routable IPv6 Addr.
 
@@ -60,7 +60,9 @@ There are 2 values you can calculate.
     One required Argument and that is the Decimal format of
     and IPv6 address.
 
-=================================================================
+    ./calc_ipv6 222.173.190.239.0.0.0.0.2.80.86.255.254.170.65.70
+
+===================================================================
 examples are from ippSec's HTB
 
 )";
