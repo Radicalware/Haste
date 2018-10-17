@@ -110,12 +110,8 @@ example from ippSec's HTB
 
 	// Inject MAC into IPv6
 	vector<string> mac_segs = re::split(":",mac_str);
-
 	string ipv6_out = ipv6_vec[0] + "::" + ord::join(mac_segs,":");
-
-	ipv6_out.erase(ipv6_out.end()-1);
-	ipv6_out = re::sub(":0",":",ipv6_out);
-	
+	ipv6_out = re::sub(":0",":",ipv6_out);	
 
 	cout << "mac addr   = " << sys["-mac"][0] << endl;
 	cout << "input IPv6 = " << sys["-ipv6"][0] << endl;
