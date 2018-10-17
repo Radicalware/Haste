@@ -103,7 +103,7 @@ int main(int argc, char** argv){
 
 		cout << endl;
 		cout << "   Input IPv6 = " << sys[1] << endl;
-		cout << "Routable IPv6 = " << ipv6_addr << endl;
+		cout << "Routable IPv6 = " << re::sub("(00:)+",":",ipv6_addr) << endl;
 		cout << endl;
 	}else{
 
