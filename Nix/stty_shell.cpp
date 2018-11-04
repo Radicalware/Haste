@@ -1,6 +1,8 @@
 
 // stty_shell
-// Version 1.0.0
+// Version 1.0.1
+
+// g++ stty_shell.cpp -o stty_shell -lOS -lSYS -lcc -lre
 
 /*
 * Copyright[2018][Joel Leagues aka Scourge]
@@ -61,7 +63,7 @@ bool shell_execute(const string& command, int out_text){
         wait(NULL); 
 
         if (out_text == 1){
-            cout << cc::green << "\nPython STTY Sent to Clipboard!!\n" << cc::white << endl;
+            cout << cc::green << "\nPython STTY Sent to Clipboard!!\n" << cc::white;
             cout << "1. paste your content (now in clipboard) into the victim's terminal\n";
             cout << "2. hit 'ctrl+z' in your victim's terminal\n";
             cout << "3. come back to this prompt and hit 'enter' for the next step.\n";
