@@ -1,6 +1,6 @@
 
 // stty_shell
-// Version 1.0.1
+// Version 1.2.0
 
 // g++ stty_shell.cpp -o stty_shell -lOS -lSYS -lcc -lre
 
@@ -68,9 +68,12 @@ bool shell_execute(const string& command, int out_text){
             cout << "2. hit 'ctrl+z' in your victim's terminal\n";
             cout << "3. come back to this prompt and hit 'enter' for the next step.\n";
         }else if(out_text == 2){
-            cout << cc::green << "\nYou have the last clip!!" << cc::white << endl;
+            cout << cc::green << "You have the 2nd clip!!" << cc::white << endl;
             cout << "1. Just go back to your other terminal and paste the last \n";
             cout << "piece of data. No need to hit 'fg' that is in your clipboard\n";
+        }else if(out_text == 3){
+            cout << cc::green << "You have the last clip!!" << cc::white << endl;
+            cout << "Just paste in your colors and your terminal will be easy to read!!\n";
             cout << cc::red << "\npress return to exit\n";
         }
 
@@ -130,17 +133,52 @@ int main(int argc, char** argv){
 
 
 
-    string cols = (os("tput cols"));
+    string cols = re::sub("\n","",(os("tput cols")));
+    string rows = re::sub("\n","",(os("tput lines")));
 
-    string rows = std::to_string(std::stoi(os("tput lines"))*2);
+    //string cols = std::to_string(std::stoi(os("tput cols" )));
+    //string rows = std::to_string(std::stoi(os("tput lines")));
+
 
 
     term_size += "export SHELL=bash\n";
     //term_size += "TERM=xterm256-color\n";
     term_size += "stty rows " + rows + " columns " + cols + '\n';
-    term_size += "clear\n\"";
+
+
+
+    term_size += "clear\n\n\n\n\"";
 
     while(!shell_execute(term_size, 2)){exit(0);}
+
+
+    string color_config = string(R"term_colors(
+
+echo "
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval \"\$(dircolors -b ~/.dircolors)\" || eval \"\$(dircolors -b)\"
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+export PS1='\\\[\\\033[1;31m\\\][\\\[\\\033[33;1m\\\]\\\w\\\[\\\033[31;1m\\\]]\\\[\\\033[m\\\]\\\n\\\[\\\033[1;31m\\\]\\\u\\\[\\\033[m\\\]@\\\[\\\033[1;31m\\\]\\\h:\\\[\\\033[31;1m\\\]\\$\\\[\\\033[1;m\\\] '
+
+export CLICOLOR=1
+# todo: make an include option for this later
+# export LS_COLORS='di=1;36:ln=35:so=32:pi=33:ex=1;32:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43'
+
+ls
+
+" )term_colors");
+
+
+    while(!shell_execute(color_config, 3)){exit(0);}
 
     return 0;
 }
