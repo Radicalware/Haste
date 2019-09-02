@@ -6,6 +6,18 @@ scripts so you will have the Haste you need!
 
 -------------------------------------------
 
+## Windows
+
+$> ff.ps1 = Find File
+Used to scan for a filename from your current dir
+similar to "find ./ -name 'argv[1]'"
+
+$> l = Windows version of ls
+This has the added benefit of also sorting your columns from smallest to largest.
+This means you will have less whitespace and fewer columns due to more space being used up.
+It means you can see more files/folders and do less scrolling. 
+Also, it seperates you files from folders and color-codes them for easy viewing.
+
 ## Nix (Linux/OSX)
 
 $> ifs = Internal File Search
@@ -23,10 +35,5 @@ This will print out all of the content (instead of just what you are grepping fo
 $> alsr
 used to alert you to your ASLR configuration and allows you to easily change it when need be.
 
-## Windows
-
-$> ff.ps1 = Find File
-Used to scan for a filename from your current dir
-similar to "find ./ -name 'argv[1]'"
 
 
