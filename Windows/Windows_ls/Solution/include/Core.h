@@ -19,9 +19,12 @@ public:
 	};
 	struct Options
 	{
-		bool dir_style = false;
-		bool show_all_files = false;
 		xstring dir;
+		bool dir_style      = false;
+		bool show_all_files = false;
+		bool sort_by_size   = false;
+
+		bool help           = false;
 	};
 
 private:
@@ -43,12 +46,11 @@ private:
 	// calculated in the constructor
 	bool m_dir_style = false;
 	bool m_hidden_valies = false;
-	xvector<xstring> m_arg_folders;
 	Options m_options;
 	// ----------------------------------------
 
 	const char* m_proj_files = R"(\.(sln|pro)$)";
-	const char* m_exe_files = R"(\.(ps1|rb|com|exe|bat|cmd|vbs|vbe|js|jse|wsf|wsh|msc|py|pyw|cpl)$)";
+	const char* m_exe_files  = R"(\.(ps1|rb|com|exe|EXE|bat|cmd|vbs|vbe|js|jse|wsf|wsh|msc|py|pyw|cpl)([\"\s]?)$)";
 	xstring m_exe_ext;
 
 	xvector<Core::Files> m_directories;
@@ -62,25 +64,31 @@ private:
 	int m_console_width = os.console_size()[0];
 	xstring empty_str;
 	bool m_view_all_files = false;
-public:
 
-	Core(int argc, char** argv);  // called when initialized
-	~Core(); // called when destroyed
+public:
+	Core(int argc, char** argv); 
+	~Core(); 
 
 private:
 	bool add_dir_items(xstring& item);
 	void trim(xstring& item);
+	void sort_files(xvector<Files>& file_lst);
+
 	bool system_hidden(const xstring& item);
 	bool user_hidden(const xstring& item);
 
-	void print_File_List(const xvector<Files>& Files_Vec);
 	void continued_print_files(xvector<Files>& dir_lst);
+	void print_ls_style_size(xvector<Files*>& pfiles);
+	void print_ls_style_alph(xvector<Files*>& pfiles);
+
+	void dir_ptr_out(const Files* item) const;
+	void dir_vals_out(const xvector<Files>& dir_lst) const;
 
 public:
-	void dup_char_out(size_t count, char chr);
+	void add_word_space(size_t count) const;
+
 	void print_ls_style();
 	void print_dir_style();
-	Core::Options options();
+
+	Core::Options options() const;
 };
-
-
