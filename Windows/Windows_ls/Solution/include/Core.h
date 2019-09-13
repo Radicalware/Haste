@@ -84,8 +84,8 @@ private:
 	void dir_ptr_out(const Files* item) const;
 	void dir_vals_out(const xvector<Files>& dir_lst) const;
 
-public:
 	void add_word_space(size_t count) const;
+public:
 
 	void print_ls_style();
 	void print_dir_style();

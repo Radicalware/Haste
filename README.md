@@ -8,8 +8,9 @@ scripts so you will have the Haste you need!
 
 ## Windows
 
-$> ff.ps1 = Find File
+$> f = Find File
 Used to scan for a filename from your current dir
+It uses multi-threading to get the job done faster!
 similar to "find ./ -name 'argv[1]'"
 
 $> l = Windows version of ls
@@ -17,6 +18,7 @@ This has the added benefit of also sorting your columns from smallest to largest
 This means you will have less whitespace and fewer columns due to more space being used up.
 It means you can see more files/folders and do less scrolling. 
 Also, it seperates you files from folders and color-codes them for easy viewing.
+The default is sorting alphabetically (same as ls on linux)
 
 ## Nix (Linux/OSX)
 
