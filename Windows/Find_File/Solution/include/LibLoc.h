@@ -19,6 +19,8 @@
 #include "SYS.h"
 #include "xstring.h"
 #include "xvector.h"
+#include "Nexus.h"
+
 // Modded Libs
 #include "cc.h"
 

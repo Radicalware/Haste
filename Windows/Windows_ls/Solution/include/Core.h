@@ -53,11 +53,13 @@ private:
 	const char* m_exe_files  = R"(\.(ps1|rb|com|exe|EXE|bat|cmd|vbs|vbe|js|jse|wsf|wsh|msc|py|pyw|cpl)([\"\s]?)$)";
 	xstring m_exe_ext;
 
+    Nexus<xvector<xstring>> m_nex_vec;
+
 	xvector<Core::Files> m_directories;
 	xvector<Core::Files> m_files;
 
 	xvector<xstring> m_str_files;
-	xvector<xstring> m_str_directories;
+    xvector<xstring> m_str_directories;
 	xstring _example;
 
 	usint m_space_size = 2;

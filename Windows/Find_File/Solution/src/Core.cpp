@@ -62,10 +62,56 @@ void Core::set_rex(const xstring& input)
 	m_rex = '(' + input + ')';
 }
 
+void Core::gather_files()
+{
+    m_file_lst = os.dir(m_directory, 'd').xrender<xvector<xstring>>([](xstring& dir) { return os.dir(dir, 'r', 'f'); }).expand<xstring>();
+    m_file_lst += os.dir(m_directory, 'f');
+}
+
+void Core::find_matching_files()
+{
+    // xrender is multi-threaded
+    // "this" is passed in but never modified
+    xvector<Splits> file_lst = m_file_lst.xrender<Splits>([this](xstring& item) {
+
+        xvector<xstring> splits;
+        xvector<xstring> finds;
+
+        if (!m_use_full_path)
+            item = '.' + item.substr(m_directory.size(), item.size() - m_directory.size());
+
+        splits = item.split(m_rex);
+        finds = item.findall(m_rex);
+        Splits sp;
+        if (finds.size() > 0) {
+            for (size_t i = 0; i < splits.size(); i++) {
+                sp.rex_off << splits[i].sub(R"(\\\\)", R"(\)");
+                if (i < finds.size())
+                    sp.rex_on << finds[i].sub(R"(\\\\)", R"(\)");
+            }
+        }
+        return sp;
+    });
+
+    file_lst.proc([](Splits& files) {
+        if (files.rex_on.size() > 0) {
+            for (size_t i = 0; i < files.rex_off.size(); i++) {
+                // files.rex_off[i];
+                cout << cc::white << files.rex_off[i];
+                if (i < files.rex_on.size())
+                    // files.rex_on[i];
+                    cout << cc::green << files.rex_on[i];
+            }
+            cout << '\n';
+        }
+    });
+}
+
 void Core::init_thrads()
 {
-	m_file_lst = os.dir(m_directory, 'r', 'f');
-
+    // multi-thread each top-tier directory scan.
+    m_file_lst = os.dir(m_directory, 'd').xrender<xvector<xstring>>([](xstring& dir) { return os.dir(dir, 'r', 'f'); }).expand<xstring>();
+    m_file_lst += os.dir(m_directory, 'f');
 
 	const int cores = std::thread::hardware_concurrency();
 	for (int i = 0; i < cores; i++)
@@ -81,7 +127,10 @@ void Core::join_thrads()
 
 void Core::single_core_scan()
 {
-	m_file_lst = os.dir(m_directory, 'r', 'f');
+    m_file_lst = os.dir(m_directory, 'r', 'f');
+    //m_file_lst = os.dir(m_directory, 'd').xrender<xvector<xstring>>([](xstring& dir) { return os.dir(dir, 'r', 'f'); }).expand<xstring>();
+    //m_file_lst += os.dir(m_directory, 'f');
+
 	xvector<xstring> splits;
 	xvector<xstring> finds;
 
@@ -93,14 +142,13 @@ void Core::single_core_scan()
 		finds = item.findall(m_rex);
 		if (finds.size() > 0) {
 			for (size_t i = 0; i < splits.size(); i++) {
-				cout << cc::white << splits[i].sub(R"(\\\\)", R"(\)");
-				if (i < finds.size())
-					cout << cc::green << finds[i].sub(R"(\\\\)", R"(\)");
-			}
+                // splits[i].sub(R"(\\\\)", R"(\)");
+                cout << cc::white << splits[i].sub(R"(\\\\)", R"(\)");
+                if (i < finds.size())
+                    // finds[i].sub(R"(\\\\)", R"(\)");
+                    cout << cc::green << finds[i].sub(R"(\\\\)", R"(\)");
+            }
 			cout << '\n';
 		}
     }
 }
-
-
-

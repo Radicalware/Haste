@@ -212,25 +212,24 @@ void Core::print_ls_style_alph(xvector<Files*>& pfiles)
 
 		for (const xvector<Files*>& row_vals : file_stacks) { // for each row
 			int count_down = 0;
-			for (int col_idx = 0; col_idx < row_vals.size(); col_idx++) {
+			for (int col_idx = 0; col_idx < row_vals.size(); col_idx++) { // for each col of that row
 				if (longest_col_values[col_idx] < row_vals[col_idx]->name->size()) {
-					longest_col_values[col_idx] = row_vals[col_idx]->name->size();
+					longest_col_values[col_idx] = row_vals[col_idx]->name->size(); // find the longest col value
 				}
 			}
 		}
 
 		if (longest_col_values.sum() + (2 * longest_col_values.size() - 2) < m_console_width)
 			break;
-
 		row_count++;
 	}
 
 	int counter = 0;
-	for (const xvector<Files*>& row_vals : file_stacks)
+	for (const xvector<Files*>& row_vals : file_stacks) // for loop prints (no multithreading)
 	{
 		int count_right = 0;
 		for (const Files* files : row_vals) { // for each col value
-			this->dir_ptr_out(files);
+			this->dir_ptr_out(files); // prints the files
 			if (static_cast<size_t>(1) + count_right < longest_col_values.size())
 				this->add_word_space(longest_col_values[count_right] - files->name->size() + 1);
 			count_right++;
@@ -288,10 +287,14 @@ void Core::print_ls_style()
 		exit(0);
 	}
 
-	m_str_directories = os.dir(m_options.dir, 'd');
-	m_str_files = os.dir(m_options.dir, 'f');
+    m_nex_vec.add_job(os.dir(m_options.dir, 'f'));
+    m_nex_vec.add_job(os.dir(m_options.dir, 'd'));
+    m_str_files = std::move(m_nex_vec(0).value());
+    m_str_directories = std::move(m_nex_vec(1).value());
+    m_nex_vec.clear();
 
 	for (xstring& file : m_str_files)
+
 	{
 		if (!this->add_dir_items(file))
 			continue;

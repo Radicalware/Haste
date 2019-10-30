@@ -22,29 +22,28 @@ message("MODULE_PATH:       ${MODULE_PATH}")
 message("--------------------------------------------------------------------------------")
 
 # -------------------------- ARGUMENTS ----------------------------------------
-set(DBG_ARG "")
-if("${BUILD_TYPE}" STREQUAL "Release")
-	message("Buidling with -O2 ${BUILD_TYPE}")
-	add_definitions( "-O2" )
+set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
+if(MSVC)
+    if("${BUILD_TYPE}" STREQUAL "Release")
+        message("Buidling with -O2 ${BUILD_TYPE}")
+        add_definitions( "-O2" )
+    endif()
 else()
-	if(UNIX)
-		set(DBG_ARG "-g2")
-		set(CMAKE_C_FLAGS ${DBG_ARG})
-		set(CMAKE_BUILD_TYPE Debug)
-	else()
-		find_package(VLD)
-	endif()
-endif()
-
-if(UNIX)
-	set(LINUX_ARGS "-std=c++17 -finput-charset=UTF-8 -Wfatal-errors -fPIC ${DBG_ARG}")
-	set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS_INIT}  ${LINUX_ARGS} ${SAN}")
+    set(LINUX_ARGS "-std=c++17 -Wfatal-errors -finput-charset=UTF-8 -fPIC -pthread")
+    if("${BUILD_TYPE}" STREQUAL "Release")
+        message("Buidling with -O2 ${BUILD_TYPE}")
+        set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS_INIT}  ${LINUX_ARGS} -O2")
+        set(CMAKE_C_FLAGS "-O2")
+    else()
+        set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS_INIT}  ${LINUX_ARGS} -g2")
+        set(CMAKE_C_FLAGS "-g2")
+    endif()
 endif()
 # -------------------------- ARGUMENTS ----------------------------------------
 # -------------------------- CONFIGURATION ------------------------------------
-set(BUILD_DIR "${CMAKE_SOURCE_DIR}/Solution")
-set(INCLUDE   "${BUILD_DIR}/include")
-set(SRC       "${BUILD_DIR}/src")
+set(BUILD_DIR ${CMAKE_SOURCE_DIR}/Solution)
+set(INCLUDE   ${BUILD_DIR}/include)
+set(SRC       ${BUILD_DIR}/src)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${INCLUDE}) 
 set(CMAKE_CONFIGURATION_TYPES ${BUILD_TYPE} CACHE STRING "" FORCE)
@@ -66,11 +65,6 @@ else()
 endif() 
 # -------------------------- CONFIGURATION ------------------------------------
 # -------------------------- BUILD --------------------------------------------
-find_package(xvector)
-find_package(xstring)
-find_package(xmap)
-find_package(OS)
-find_package(cc)
 
 add_executable(${THIS}
     ${SRC}/${THIS}.cpp
@@ -82,8 +76,16 @@ add_executable(${THIS}
     ${SRC}/LibLoc.cpp
 )
 
+find_package(Nexus)
+find_package(xvector)
+find_package(xstring)
+find_package(xmap)
+find_package(OS)
+find_package(cc)
+
 target_link_libraries( ${THIS}
     PRIVATE		
+        radical::Nexus
         radical::xvector
         radical::xstring
         radical::xmap
@@ -92,4 +94,10 @@ target_link_libraries( ${THIS}
         radical_mod::cc
 )
 # -------------------------- BUILD --------------------------------------------
+# -------------------------- INSTALL ------------------------------------------
+install (  
+    TARGETS             ${THIS}
+    DESTINATION         bin/${BUILD_TYPE}
+)
+# -------------------------- INSTALL ------------------------------------------
 # -------------------------- END ----------------------------------------------

@@ -14,6 +14,7 @@
 #include<set>
 
 // Radical Generic Libs
+#include "Nexus.h"
 #include "OS.h"
 extern OS  os; 
 
