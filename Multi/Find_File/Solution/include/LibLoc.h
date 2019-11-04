@@ -1,8 +1,11 @@
 ﻿
 //#include <vld.h>
 
-#include<iostream>
+#if(MSVC)
 #include<Windows.h>
+#endif
+
+#include<iostream>
 #include<vector>
 #include<string>
 #include<utility>
@@ -20,6 +23,7 @@
 #include "xstring.h"
 #include "xvector.h"
 #include "Nexus.h"
+#include "Timer.h"
 
 // Modded Libs
 #include "cc.h"

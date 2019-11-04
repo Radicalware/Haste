@@ -6,12 +6,18 @@ scripts so you will have the Haste you need!
 
 -------------------------------------------
 
-## Windows
+## MultiPlatform
+
 
 $> f = Find File
 Used to scan for a filename from your current dir
 It uses multi-threading to get the job done faster!
 similar to "find ./ -name 'argv[1]'"
+
+$> afs = advanced file search
+This will recursivly search your files for text with multithreading
+
+## Windows
 
 $> l = Windows version of ls
 This has the added benefit of also sorting your columns from smallest to largest.
@@ -24,10 +30,6 @@ The default is sorting alphabetically (same as ls on linux)
 
 $> ifs = Internal File Search
 It will scan the contents inside your files to find the content you are looking for.
-
-$> ff = Find File
-faster to use "ff <filename>" instead of
-find ./ -name 'filename' -type f
 
 $> cg = color grep
 This will print out all of the content (instead of just what you are grepping for) and will make what you are grepping for in color red (good when you need the big picture).

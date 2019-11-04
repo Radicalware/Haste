@@ -4,13 +4,6 @@ cmake_minimum_required(VERSION 3.10)
 SET(THIS f)
 project (${THIS})
 
-
-if(UNIX)
-	message("This Tool was not designed for Nix Based Systems")
-	message("I suggest you use ls bash tool as it is very similar")
-    exit()
-endif()
-
 message("")
 message("--------------------------------------------------------------------------------")
 message("THIS:              ${THIS}")
@@ -69,8 +62,8 @@ endif()
 add_executable(${THIS}
     ${SRC}/${THIS}.cpp
 
-    ${INCLUDE}/core.h
-    ${SRC}/core.cpp
+    ${INCLUDE}/Core.h
+    ${SRC}/Core.cpp
 
     ${INCLUDE}/LibLoc.h
     ${SRC}/LibLoc.cpp
@@ -99,9 +92,25 @@ target_link_libraries( ${THIS}
 )
 # -------------------------- BUILD --------------------------------------------
 # -------------------------- INSTALL ------------------------------------------
-install (  
-    TARGETS             ${THIS}
-    DESTINATION         bin/${BUILD_TYPE}
+install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin)
+
+install( 
+    TARGETS       OS SYS Timer cc 
+    DESTINATION   ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin
+)
+install(
+    TARGETS       Nexus xvector xstring xmap 
+    DESTINATION   ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/lib
+)
+
+# Header/Src Files
+install (   
+    DIRECTORY           ${BUILD_DIR}/include 
+    DESTINATION         code/Solutions/${THIS}
+)
+install (   
+    DIRECTORY           ${BUILD_DIR}/src 
+    DESTINATION         code/Solutions/${THIS}
 )
 # -------------------------- INSTALL ------------------------------------------
 # -------------------------- END ----------------------------------------------

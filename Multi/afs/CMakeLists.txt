@@ -1,15 +1,8 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-SET(THIS l)
+SET(THIS afs)
 project (${THIS})
-
-
-if(UNIX)
-	message("This Tool was not designed for Nix Based Systems")
-	message("I suggest you use ls bash tool as it is very similar")
-    exit()
-endif()
 
 message("")
 message("--------------------------------------------------------------------------------")
@@ -69,11 +62,14 @@ endif()
 add_executable(${THIS}
     ${SRC}/${THIS}.cpp
 
-    ${INCLUDE}/core.h
-    ${SRC}/core.cpp
-
+    ${INCLUDE}/Core.h
+    ${SRC}/Core.cpp
+	
     ${INCLUDE}/LibLoc.h
     ${SRC}/LibLoc.cpp
+
+    ${INCLUDE}/File.h
+    ${SRC}/File.cpp
 )
 
 find_package(Nexus)
@@ -81,7 +77,9 @@ find_package(xvector)
 find_package(xstring)
 find_package(xmap)
 find_package(OS)
+find_package(SYS)
 find_package(cc)
+find_package(Timer)
 
 target_link_libraries( ${THIS}
     PRIVATE		
@@ -89,16 +87,20 @@ target_link_libraries( ${THIS}
         radical::xvector
         radical::xstring
         radical::xmap
+
         radical::OS
+        radical::SYS
+        radical::Timer
 		
         radical_mod::cc
 )
 # -------------------------- BUILD --------------------------------------------
 # -------------------------- INSTALL ------------------------------------------
+
 install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin)
 
 install( 
-    TARGETS       OS cc 
+    TARGETS       OS SYS Timer cc 
     DESTINATION   ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin
 )
 install(
@@ -115,5 +117,6 @@ install (
     DIRECTORY           ${BUILD_DIR}/src 
     DESTINATION         code/Solutions/${THIS}
 )
+
 # -------------------------- INSTALL ------------------------------------------
 # -------------------------- END ----------------------------------------------
