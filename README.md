@@ -4,11 +4,12 @@ Below is the list of tools to make your day-to-day life easier with "Haste"
 
 ## MultiPlatform
 
-
 $> f = Find File (v6.4.0)
     1.  Used to find filenames with multi-threading and C++ based Regex
     2.  You can limit the threadcount but default is to use all availible threads
+
 ----------------------------------------------------------------------------------------------------
+
 $> afs = advanced file search (v6.4.0)
     1.  Used to recursively find text files with multi-threading and C++ based Regex
     2.  You can limit the threadcount but default is to use all availible threads
