@@ -12,4 +12,9 @@ which right now, binary scan searching is much slower than grep.
 afs if faster than grep for text scans as long as you have a good
 multi-threaded CPU.
 
+Also, many times Anti-Virus will slow it down. If that is the case
+you won't get 99% CPU utilization, so run the same scan again
+and you will probably get 99% CPU utilization (because AV now knows
+its good) and then you will get the performance you are looking for.
+
 ---------------------------------------------------------------------
