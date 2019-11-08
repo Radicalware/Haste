@@ -14,7 +14,7 @@ message("EXT_BIN_PATH:      ${EXT_BIN_PATH}")
 message("MODULE_PATH:       ${MODULE_PATH}")
 message("--------------------------------------------------------------------------------")
 
-# -------------------------- ARGUMENTS ----------------------------------------
+# -------------------------- ARGUMENTS ----------------------------------------------------
 set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
 if(MSVC)
     if("${BUILD_TYPE}" STREQUAL "Release")
@@ -32,8 +32,8 @@ else()
         set(CMAKE_C_FLAGS "-g2")
     endif()
 endif()
-# -------------------------- ARGUMENTS ----------------------------------------
-# -------------------------- CONFIGURATION ------------------------------------
+# -------------------------- ARGUMENTS ----------------------------------------------------
+# -------------------------- CONFIGURATION ------------------------------------------------
 set(BUILD_DIR ${CMAKE_SOURCE_DIR}/Solution)
 set(INCLUDE   ${BUILD_DIR}/include)
 set(SRC       ${BUILD_DIR}/src)
@@ -56,8 +56,8 @@ else()
     set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/bin")
     set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
 endif() 
-# -------------------------- CONFIGURATION ------------------------------------
-# -------------------------- BUILD --------------------------------------------
+# -------------------------- CONFIGURATION ------------------------------------------------
+# -------------------------- BUILD --------------------------------------------------------
 
 add_executable(${THIS}
     ${SRC}/${THIS}.cpp
@@ -94,10 +94,14 @@ target_link_libraries( ${THIS}
 		
         radical_mod::cc
 )
-# -------------------------- BUILD --------------------------------------------
-# -------------------------- INSTALL ------------------------------------------
+# -------------------------- BUILD --------------------------------------------------------
+# -------------------------- INSTALL ------------------------------------------------------
 
-install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin)
+if(MSVC)
+    install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin)
+else()
+    install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE})
+endif()
 
 install( 
     TARGETS       OS SYS Timer cc 
@@ -118,5 +122,5 @@ install (
     DESTINATION         code/Solutions/${THIS}
 )
 
-# -------------------------- INSTALL ------------------------------------------
-# -------------------------- END ----------------------------------------------
+# -------------------------- INSTALL ------------------------------------------------------
+# -------------------------- END ----------------------------------------------------------

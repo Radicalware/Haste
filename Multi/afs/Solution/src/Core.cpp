@@ -1,15 +1,5 @@
-﻿#include "Core.h"
+#include "Core.h"
 #pragma warning( disable : 26812 ) // to allow our rxm enum even though it isn't a class enum
-
-void Core::parse_as_regex(bool input)
-{
-    m_parse_as_regex = input;
-}
-
-void Core::set_case_sensitive()
-{
-    m_icase = rxm::ECMAScript;
-}
 
 void Core::set_dir(const xstring& input, bool use_pwd)
 {
@@ -23,136 +13,115 @@ void Core::set_dir(const xstring& input, bool use_pwd)
 
 void Core::set_rex(const xstring& input)
 {
-    m_rex = '(' + input + ')';
+    m_rex = "(" + input + ")";
 }
 
-void Core::gather_files()
+void Core::set_case_sensitive_on()
 {
-    m_file_lst = os.dir(m_directory, 'd').xrender<xvector<xstring>>([](xstring& dir) { return os.dir(dir, 'r', 'f'); }).expand();
-    m_file_lst += os.dir(m_directory, 'f');
-    cout << "Files in Dir: " << m_file_lst.size() << endl;
-    //m_file_lst.join('\n').print();
+    m_icase = rxm::ECMAScript;
 }
 
-void Core::find_matching_files()
+void Core::set_binary_on()
 {
-    // xrender is multi-threaded
-    // "this" is passed in with std::ref but never modified
-    m_files = m_file_lst.xrender<File>( [this](const xstring& item)  
+    m_binary_search = true;
+}
+
+File Core::scan_file(xstring& path, const Core& core, const OS& osi, const bool search_binary)
+{
+    if (!core.m_use_full_path)
+        path = '.' + path(static_cast<double>(osi.pwd().size()), 0);
+
+    File file(path);
+
+    if (file.binary && !search_binary) 
     {
+        file.data.clear();
+        file.non_ascii = 1;
+        return file;
+    }
 
-        xstring nitem;
-        if (!m_use_full_path)
-            nitem = '.' + item(static_cast<double>(os.pwd().size()), 0);
-        else
-            nitem = item;
-
-        File file (nitem);
-
-        if (file.data(4, 0).has_non_ascii()) 
+    if (search_binary) 
+    {
+        if (file.data.has_non_ascii(4))
         {
-            file.non_ascii = true;
+            file.matches = file.data.scan(core.m_rex, core.m_icase);
+            file.data.clear();
+            file.non_ascii = 1;
             return file;
         }
+    }
 
-        xvector<xstring> splits;
-        xvector<xstring> finds;
-        unsigned long long int counter = 0;
-        for (const xstring& line : file.data.split('\n'))
+    file.matches = file.data.scan(core.m_rex);
+    if (!file.matches) {
+        file.data.clear();
+        return file;
+    }
+
+    unsigned long int counter = 0;
+    for (const xstring& line : file.data.split('\n'))
+    {
+        counter++;
+        // The following line actually slows it down
+        //if (!line.scan(core.m_rex))
+        //    continue;
+
+        File::Splits sp;
+        sp.splits = line.inclusive_split(core.m_rex, core.m_icase, false);
+
+        if (sp.splits.size())
         {
-            counter++;
-            File::Splits sp;
-            splits = line.split(m_rex, m_icase);
-            finds = line.findall(m_rex, m_icase);
-            if (finds.size() > 0)
-            {
-                for (size_t i = 0; i < splits.size(); i++)
-                {
-                    sp.rex_off << splits[i];
-                    if (i < finds.size()) {
-                        sp.rex_on << finds[i];
-                        file.matches = true;
-                    }
-                }
-            }
             sp.line_num = counter;
             file.lines << sp;
         }
-        return file;
-    });
+    }
+    file.data.clear();
+    return file;
+}
+
+void Core::multi_core_scan()
+{
+
+    m_file_lst = os.dir(m_directory, 'd').xrender<xvector<xstring>>([](xstring& dir) { return os.dir(dir, 'r', 'f'); }).expand();
+    m_file_lst += os.dir(m_directory, 'f');
+    //m_file_lst.join('\n').print();
+    cout << cc::cyan << "Files in Dir: " << m_file_lst.size() << cc::reset << endl;
+
+    // xrender is multi-threaded
+    // "this" is passed in with std::ref but never modified
+    m_files = m_file_lst.xrender<File>(Core::scan_file, std::ref(*this), std::ref(os), m_binary_search);
 }
 
 void Core::single_core_scan()
 {
     m_file_lst = os.dir(m_directory, 'r', 'f');
-    for (const xstring& item : m_file_lst) 
-    {
-        xstring nitem;
-        if (!m_use_full_path)
-            nitem = '.' + item(static_cast<double>(os.pwd().size()), 0);
-        else
-            nitem = item;
+    cout << cc::cyan << "Files in Dir: " << m_file_lst.size() << cc::reset << endl;
 
-        File file(nitem);
-
-        if (file.data(4, 0).has_non_ascii())
-        {
-            file.non_ascii = true;
-            continue;
-        }
-
-        xvector<xstring> splits;
-        xvector<xstring> finds;
-        unsigned long long int counter = 0;
-        for (const xstring& line : file.data.split('\n'))
-        {
-            counter++;
-            File::Splits sp;
-            splits = line.split(m_rex, m_icase);
-            finds = line.findall(m_rex, m_icase);
-            if (finds.size() > 0)
-            {
-                for (size_t i = 0; i < splits.size(); i++)
-                {
-                    sp.rex_off << splits[i];
-                    if (i < finds.size()) {
-                        sp.rex_on << finds[i];
-                        file.matches = true;
-                    }
-                }
-            }
-            sp.line_num = counter;
-            file.lines << sp;
-        }
-        m_files << file;
-    }
+    m_files = m_file_lst.render<File>(Core::scan_file, std::ref(*this), std::ref(os), m_binary_search);
 }
 
 void Core::print()
 {
-    this->print_divider();
-    for (const File& file : m_files)
+    for (File& file : m_files)
     {
         if (file.non_ascii)
             continue;
-        file.print(&m_line_tracker_on, sys('n'));
+        file.print(m_rex);
     };
 
     this->print_divider();
-    bool found_non_ascii = false;
+    bool binary_matched = false;
     for (const File& file : m_files)
     {
-        if (file.non_ascii) {
-            if(sys('n'))
-                cout << "Non-ASCII: " << file.path << endl;
-            found_non_ascii = true;
+        if (file.non_ascii && file.matches) {
+            cout << "Binary File Matches (" << file.non_ascii << "): " << file.path << '\n';
+            binary_matched = true;
         }
     }
-    if (found_non_ascii)
+    if (binary_matched)
         this->print_divider();
 }
 
 void Core::print_divider() const
 {
-    cout << cc::blue << xstring(os.console_size()[0], '=') << cc::reset;
+    cout << cc::blue << xstring(os.console_size()[0], '-') << cc::reset;
 }

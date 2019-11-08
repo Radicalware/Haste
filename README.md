@@ -42,7 +42,9 @@ $> alsr
 
 
 
-# On Nix, add the following to your bash env (bashrc/bash_profile/etc)
+****************************************************************************************************
+
+## On Nix, add the following to your bash env (bashrc/bash_profile/etc)
 
 export LIBRARY_PATH="/opt/Radicalware/Libraries/cpp/include":$LIBRARY_PATH
 export LIBRARY_PATH="/opt/Radicalware/Libraries/cpp/code/Projects":$LIBRARY_PATH

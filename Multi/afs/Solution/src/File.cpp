@@ -1,9 +1,8 @@
-﻿#include "File.h"
+#include "File.h"
 
 
 File::File()
 {
-    this->path = "Uninitialized";
 }
 
 File::File(const File& file)
@@ -11,9 +10,21 @@ File::File(const File& file)
     this->operator=(file);
 }
 
-File::File(const xstring& i_path): path(i_path)
+File::File(const xstring& i_path)
 {
-    data = os.open(path).read();
+    path = i_path;
+    if (sys('b')) {
+        data = os.read(path);
+    }
+    else {
+        try {
+            data = os.fast_text(path);
+        }
+        catch (std::runtime_error&) {
+            this->non_ascii = 1;
+            this->binary = true;
+        }
+    }
 }
 
 void File::operator=(const File& file)
@@ -26,48 +37,56 @@ void File::operator=(const File& file)
 }
 
 
-void File::print(bool* line_tracker_on, bool show_non_matches) const
+void File::print(const xstring& rex)
 {
-    if (!this->matches) {
-        if (*line_tracker_on && show_non_matches) {
-            cout << '\n';
-            this->print_divider();
-            *line_tracker_on = false;
-        }
-        if(show_non_matches)
-            cout << "No Matches: " << this->path << endl;
-        return;
+    bool printed = false;
+    if (this->matches && !this->non_ascii) {
+        this->print_divider();
+        cout << cc::cyan << ">>> FILE: >>> " << this->path.sub(R"(\\\\)", "\\") << "\n\n" << cc::reset;
+        printed = true;
     }
-    else {
-        *line_tracker_on = true;
-    }
-
-    this->print_divider();
-    cout << cc::cyan << ">>> FILE: >>> " << this->path.sub(R"(\\\\)","\\") << "\n\n" << cc::reset;
 
     bool line_match = false;
-    for (auto& line : lines)
+    for (File::Splits& line : lines)
     {
-        line_match = line.rex_on.size();
-        if (line_match)
-            cout << line.line_num << ": ";
-        for (size_t i = 0; i < line.rex_off.size(); i++) 
-        {
-            if(line_match)
-                cout << cc::white << line.rex_off[i];
-            if (i < line.rex_on.size())
-                cout << cc::green << line.rex_on[i];
+        if (line.splits.size() == 0)
+            continue;
+
+        cout << cc::cyan << line.line_num << ": " << cc::reset;
+        bool on = false;
+        if (line[0].match(rex))
+            on = true;
+
+        double padding = File::Splits::max_line_len - std::to_string(line.line_num).length();
+        cout << std::string(static_cast<size_t>(padding), ' ');
+
+        line[0] = line[0].sub(R"(^[\s]*)", "");
+
+        if (line.splits.join().size() > 300) {
+            cout << "Line Over 300 Char Limit!\n";
+            continue;
         }
-        if (line_match)
-            cout << '\n';
+
+        for (size_t i = 0; i < line.splits.size(); i++)
+        {
+            if (on)
+                cout << cc::red << cc::bold << line[i] << cc::reset;
+            else
+                cout << line[i];
+            on = !on;
+        }
+        cout << "\n";
     };
-    cout << '\n';
+    if(printed)
+        cout << '\n';
 }
 
 void File::print_divider() const
 {
-    cout << cc::blue << xstring(os.console_size()[0], '=') << cc::reset;
+    cout << cc::blue << xstring(os.console_size()[0], '-') << cc::reset;
 }
+
+const double File::Splits::max_line_len = 7;
 
 File::Splits::Splits()
 {
@@ -75,7 +94,11 @@ File::Splits::Splits()
 
 File::Splits::Splits(const Splits& split)
 {
-    rex_on = split.rex_on;
-    rex_off = split.rex_off;
+    splits = split.splits;
     line_num = split.line_num;
+}
+
+xstring& File::Splits::operator[](size_t val)
+{
+    return splits[val];
 }

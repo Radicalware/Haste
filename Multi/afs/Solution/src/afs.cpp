@@ -1,4 +1,4 @@
-﻿
+
 /*
 * Copyright[2019][Joel Leagues aka Scourge]
 * Scourge /at\ protonmail /dot\ com
@@ -35,17 +35,17 @@ int help(int ret_err) {
     afs is used to Find text in Files Recursivly
     afs used as afs.exe
 
-    ----------------------------------------------------------------
+    ------------------------------------------------------------------
       Key    |   Key (long) |  Value
-    ----------------------------------------------------------------
-      -r     |  --regex     |  Regex to search for
-      -d     |  --dir       |  Directory to search in
-      -f     |  --full      |  Show the Full Path
-      -o     |  --one       |  run under only one thread
-      -t     |  --threads   |  int thread count
-      -c     |  --case      |  Case-Sensitive Regex
-      -n     |  --non       |  Show non-ascii / non-matched files
-    ----------------------------------------------------------------
+    ------------------------------------------------------------------
+      -r     |  --regex     |  (str)  Regex to search for
+      -d     |  --dir       |  (str)  Directory to search in
+      -f     |  --full      |  (bool) Show the Full Path
+      -o     |  --one       |  (bool) run under only one thread
+      -t     |  --threads   |  (int)  thread count
+      -c     |  --case      |  (bool) Case-Sensitive Regex
+      -b     |  --binary    |  (bool) Search Binary Files 
+    ------------------------------------------------------------------
 
     If no '-' are found in args are parsed as argv[x][0] 
     then the following parsed method will be uesd. 
@@ -66,14 +66,14 @@ int help(int ret_err) {
 
 int main(int argc, char** argv) 
 {	
-    
+    Timer t;
     sys.alias('r', "--regex");
     sys.alias('d', "--dir");
     sys.alias('f', "--full");
     sys.alias('o', "--one");
     sys.alias('t', "--threads");
     sys.alias('c', "--case");
-    sys.alias('n', "--non");
+    sys.alias('b', "--binary");
     sys.set_args(argc, argv);
 
     if (sys.help()) 
@@ -105,24 +105,27 @@ int main(int argc, char** argv)
         core.set_rex(*sys['r'][0]);
     }
 
-    Nexus<void> nxv;
+    if (sys('c'))
+        core.set_case_sensitive_on();
+
+    if (sys('b')) 
+        core.set_binary_on();
+    
     if (sys('t'))
-        nxv.set_thread_count((*sys['t'][0]).to_int());
+        CPU_Threads::set_thread_count((*sys['t'][0]).to_int());
 
     core.print_divider();
-    Timer t;
     if (sys('o')) {
         core.single_core_scan();
         core.print();
-        cout << "Single-Threaded\n";
+        cout << cc::cyan << "Single-Threaded\n" << cc::reset;
     }
     else {
-        core.gather_files();
-        core.find_matching_files();
+        core.multi_core_scan();
         core.print();
-        cout << "Threads Availible: " << CPU_Threads::threads_available() << endl;
+        cout << cc::cyan << "Threads Availible: " << CPU_Threads::threads_available() << cc::reset << endl;
     }
-    cout << "Time: " << t << endl;
+    cout << cc::cyan << "Time: " << t << cc::reset << endl;
     core.print_divider();
 	
 	return 0;

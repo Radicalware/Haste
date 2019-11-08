@@ -92,7 +92,12 @@ target_link_libraries( ${THIS}
 )
 # -------------------------- BUILD --------------------------------------------
 # -------------------------- INSTALL ------------------------------------------
-install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin)
+
+if(MSVC)
+    install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin)
+else()
+    install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE})
+endif()
 
 install( 
     TARGETS       OS SYS Timer cc 
