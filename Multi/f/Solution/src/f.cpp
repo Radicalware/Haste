@@ -1,19 +1,13 @@
-
-#include "OS.h"
-#include "SYS.h"
-
-OS  os;
-SYS sys;
-
 #include "LibLoc.h"
 #include "Core.h"
 
-#include "Timer.h"
 
 int help(int val = 0);
 
 int main(int argc, char** argv)
 {
+    SYS sys;
+
 	sys.alias('r', "--regex");
 	sys.alias('d', "--dir");
 	sys.alias('f', "--full");
@@ -27,12 +21,16 @@ int main(int argc, char** argv)
 		return help();
 
     Core core;
+
+    if (sys('f'))
+        core.set_full_path();
+
     if (sys('s'))
         core.swap_split();
 	if (!sys.key_used()) {
 		if (argc == 2) {
 			core.set_rex(argv[1]);
-			core.set_dir(os.pwd(), true);
+			core.set_dir(OS::PWD(), true);
 		}
 		else if (argc == 3) {
 			core.set_rex(argv[1]);
@@ -43,32 +41,39 @@ int main(int argc, char** argv)
 		}
 	}
 	else{
-		if (!sys('r'))
-			return help(1);
+        if (sys[1][0] == '-' && !sys('r'))
+            return help(1);
+        else if (!sys('r'))
+            core.set_rex(sys[1]); // set argv[1] as the regex
+        else
+            core.set_rex(*sys['r'][0]);
 		
 		if (sys('d'))
 			core.set_dir(*sys['d'][0]);
 		else
-			core.set_dir(os.pwd(), true);
+			core.set_dir(OS::PWD(), true);
 
-		core.set_rex(*sys['r'][0]);
+        if (sys('c'))
+            core.set_case_sensitive();
 	}
+
     Nexus<void> nxv;
     if (sys('t')) {
-        nxv.set_thread_count((*sys['t'][0]).to_int());
+        nxv.Set_Thread_Count((*sys['t'][0]).to_int());
     }
     
     Timer t;
 	if (sys('o')) {
 		core.single_core_scan();
+        core.print_files();
         cout << cc::cyan;
         cout << "Single-Threaded\n";
 	}
 	else {
-        core.gather_files(); 
-        core.find_matching_files();
+        core.multi_core_scan();
+        core.print_files();
         cout << cc::cyan;
-        cout << "Threads Availible: " << CPU_Threads::threads_available() << endl;
+        cout << "Threads Availible: " << NX_Threads::Thread_Count_Available() << endl;
 	}
     cout << "Time: " << t << cc::reset << endl;
 
@@ -107,7 +112,6 @@ int help(int val){
     if (argc > 3)
         Use the KVPs as described in the table above.
 
-    )";
-
+)";
     return 0;
 }

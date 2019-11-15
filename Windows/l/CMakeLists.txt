@@ -16,7 +16,7 @@ message("-----------------------------------------------------------------------
 message("THIS:              ${THIS}")
 message("BUILD_TYPE:        ${BUILD_TYPE}")
 message("INSTALL_PREFIX:    ${INSTALL_PREFIX}")
-message("EXT_INCLUDE_PATH:  ${EXT_INCLUDE_PATH}")
+message("EXT_HEADER_PATH:   ${EXT_HEADER_PATH}")
 message("EXT_BIN_PATH:      ${EXT_BIN_PATH}")
 message("MODULE_PATH:       ${MODULE_PATH}")
 message("--------------------------------------------------------------------------------")
@@ -42,10 +42,10 @@ endif()
 # -------------------------- ARGUMENTS ----------------------------------------
 # -------------------------- CONFIGURATION ------------------------------------
 set(BUILD_DIR ${CMAKE_SOURCE_DIR}/Solution)
-set(INCLUDE   ${BUILD_DIR}/include)
+set(INC       ${BUILD_DIR}/include)
 set(SRC       ${BUILD_DIR}/src)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${INCLUDE}) 
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${INC}) 
 set(CMAKE_CONFIGURATION_TYPES ${BUILD_TYPE} CACHE STRING "" FORCE)
 set(CMAKE_MODULE_PATH ${MODULE_PATH})
 
@@ -53,7 +53,7 @@ if(MSVC)
     SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/bin")
     SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/bin")
 
-    SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
+    SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_lDEBUG   "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
     SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
 
     SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
@@ -69,10 +69,10 @@ endif()
 add_executable(${THIS}
     ${SRC}/${THIS}.cpp
 
-    ${INCLUDE}/core.h
+    ${INC}/core.h
     ${SRC}/core.cpp
 
-    ${INCLUDE}/LibLoc.h
+    ${INC}/LibLoc.h
     ${SRC}/LibLoc.cpp
 )
 
@@ -95,25 +95,26 @@ target_link_libraries( ${THIS}
 )
 # -------------------------- BUILD --------------------------------------------
 # -------------------------- INSTALL ------------------------------------------
-install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin)
+
+install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../Applications/Build/${BUILD_TYPE})
 
 install( 
     TARGETS       OS cc 
-    DESTINATION   ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/bin
+    DESTINATION   ${INSTALL_PREFIX}/../Applications/Build/${BUILD_TYPE}/bin
 )
 install(
     TARGETS       Nexus xvector xstring xmap 
-    DESTINATION   ${INSTALL_PREFIX}/../../Tools/${BUILD_TYPE}/lib
+    DESTINATION   ${INSTALL_PREFIX}/../Applications/Build/${BUILD_TYPE}/lib
 )
 
 # Header/Src Files
 install (   
     DIRECTORY           ${BUILD_DIR}/include 
-    DESTINATION         code/Solutions/${THIS}
+    DESTINATION         ../Applications/Solutions/${THIS}
 )
 install (   
     DIRECTORY           ${BUILD_DIR}/src 
-    DESTINATION         code/Solutions/${THIS}
+    DESTINATION         ../Applications/Solutions/${THIS}
 )
 # -------------------------- INSTALL ------------------------------------------
 # -------------------------- END ----------------------------------------------

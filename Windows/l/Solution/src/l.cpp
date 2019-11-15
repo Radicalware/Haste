@@ -1,7 +1,4 @@
-﻿
-#include "OS.h"
-OS os;
-#include "LibLoc.h"
+﻿#include "LibLoc.h"
 #include "Core.h"
 
 using std::cout;
@@ -11,6 +8,7 @@ int help();
 
 int main(int argc, char** argv)
 {
+	Nexus<>::Construct();
 	Core core(argc, argv);	
 
 	if (core.options().help)
@@ -23,6 +21,7 @@ int main(int argc, char** argv)
 		core.print_ls_style();
 
 	cout << cc::reset;
+	Nexus<>::Dispose();
 	return 0;
 }
 

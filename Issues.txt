@@ -1,7 +1,0 @@
-
------------- Issues that will be addressed ----------------------------------
-
-*: f needs to use the split_inclusive as afs now uses for speed enhancment
-*: afs does not search case-insensitive
-*: f only uses case-insensitive
-

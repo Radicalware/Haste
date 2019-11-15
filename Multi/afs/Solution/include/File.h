@@ -2,10 +2,6 @@
 
 #include "LibLoc.h"
 
-
-extern OS  os;  // Operating System Object
-extern SYS sys; // Args Object
-
 struct File
 {
     struct Splits // Splits up each line of a file
@@ -19,17 +15,20 @@ struct File
     };
 
     File();
+    ~File();
     File(const File& file);
-    File(const xstring& i_path);
+    File(const xstring& i_path, bool ibinary_search_on);
     void operator=(const File& file);
 
     xstring path;
     xstring data;
     xvector<File::Splits> lines;
 
-    int non_ascii = 0;
+    bool binary  = false;
     bool matches = false;
-    bool binary = false;
+    bool binary_search_on = false;
+    xstring err;
+    //xstring* err;
 
     void print(const xstring& rex);
     void print_divider() const;

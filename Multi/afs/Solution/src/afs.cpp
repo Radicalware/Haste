@@ -18,16 +18,10 @@
 * limitations under the License.
 */
 
-#include "OS.h"
-#include "SYS.h"
-
-OS os;
-SYS sys;
+// DEBUG ARGS: -r rxm::icase -d C:\source\Tools\afs -o
 
 #include "LibLoc.h"
 #include "Core.h"
-
-
 
 int help(int ret_err) {
     cout << R"(
@@ -67,6 +61,7 @@ int help(int ret_err) {
 int main(int argc, char** argv) 
 {	
     Timer t;
+    SYS sys;
     sys.alias('r', "--regex");
     sys.alias('d', "--dir");
     sys.alias('f', "--full");
@@ -80,10 +75,14 @@ int main(int argc, char** argv)
         return help(0);
     
     Core core;
+
+    if (sys('f'))
+        core.set_full_path();
+
     if (!sys.key_used()) {
         if (argc == 2) {
             core.set_rex(argv[1]);
-            core.set_dir(os.pwd(), true);
+            core.set_dir(OS::PWD(), true);
         }
         else if (argc == 3) {
             core.set_rex(argv[1]);
@@ -94,15 +93,21 @@ int main(int argc, char** argv)
         }
     }
     else {
-        if (!sys('r'))
+
+        // If you didn't use a regex as argv[1] && If you didn't specify the --regex kvp
+        // You should use -r <regex> but you can omit the '-r' if you have argv[1] as your regex
+        if (sys[1][0] == '-' && !sys('r'))
             return help(1);
+        else if (!sys('r'))
+            core.set_rex(sys[1]); // set argv[1] as the regex
+        else
+            core.set_rex(*sys['r'][0]);
 
         if (sys('d'))
             core.set_dir(*sys['d'][0]);
         else
-            core.set_dir(os.pwd(), true);
+            core.set_dir(OS::PWD(), true);
 
-        core.set_rex(*sys['r'][0]);
     }
 
     if (sys('c'))
@@ -112,7 +117,7 @@ int main(int argc, char** argv)
         core.set_binary_on();
     
     if (sys('t'))
-        CPU_Threads::set_thread_count((*sys['t'][0]).to_int());
+        NX_Threads::Set_Thread_Count((*sys['t'][0]).to_int());
 
     core.print_divider();
     if (sys('o')) {
@@ -123,7 +128,7 @@ int main(int argc, char** argv)
     else {
         core.multi_core_scan();
         core.print();
-        cout << cc::cyan << "Threads Availible: " << CPU_Threads::threads_available() << cc::reset << endl;
+        cout << cc::cyan << "Threads Availible: " << NX_Threads::Thread_Count_Available() << cc::reset << endl;
     }
     cout << cc::cyan << "Time: " << t << cc::reset << endl;
     core.print_divider();

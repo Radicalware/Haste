@@ -5,24 +5,61 @@ File::File()
 {
 }
 
+File::~File()
+{
+    //if (err != nullptr) 
+    //    delete err;
+}
+
 File::File(const File& file)
 {
     this->operator=(file);
 }
 
-File::File(const xstring& i_path)
+File::File(const xstring& i_path, bool ibinary_search_on)
 {
     path = i_path;
-    if (sys('b')) {
-        data = os.read(path);
-    }
-    else {
+    binary_search_on = ibinary_search_on;
+    if (binary_search_on)
+    {
+#if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
+        bool open_failure = false;
         try {
-            data = os.fast_text(path);
+            data = OS::Fast_Read(path);
         }
         catch (std::runtime_error&) {
-            this->non_ascii = 1;
-            this->binary = true;
+            open_failure = true;
+        }
+
+        if (open_failure)
+        {
+            try {
+                data = OS::Stream_Read(path);
+            }
+            catch (std::runtime_error & errstr) {
+                this->data.clear();
+                this->err = errstr.what();
+            }
+        }
+
+#else
+        try {
+            data = OS::Stat_Read(path);
+        }   
+        catch (std::runtime_error & errstr) {
+            this->data.clear();
+            this->err = errstr.what();
+        }
+#endif
+    }
+    else { // not binary searching
+        try {
+            data = OS::Fast_Read(path);
+        }
+        catch (std::runtime_error& errstr) 
+        {
+            this->data.clear();
+            this->err = errstr.what();// new xstring(errstr.what());
         }
     }
 }
@@ -32,15 +69,16 @@ void File::operator=(const File& file)
     this->path = file.path;
     this->data = file.data;
     this->lines = file.lines;
-    this->non_ascii = file.non_ascii;
+    this->binary = file.binary;
     this->matches = file.matches;
+    this->binary_search_on = file.binary_search_on;
 }
 
 
 void File::print(const xstring& rex)
 {
     bool printed = false;
-    if (this->matches && !this->non_ascii) {
+    if (this->matches && !this->binary) {
         this->print_divider();
         cout << cc::cyan << ">>> FILE: >>> " << this->path.sub(R"(\\\\)", "\\") << "\n\n" << cc::reset;
         printed = true;
@@ -83,7 +121,7 @@ void File::print(const xstring& rex)
 
 void File::print_divider() const
 {
-    cout << cc::blue << xstring(os.console_size()[0], '-') << cc::reset;
+    cout << cc::blue << xstring(OS::Console_Size()[0], '-') << cc::reset;
 }
 
 const double File::Splits::max_line_len = 7;

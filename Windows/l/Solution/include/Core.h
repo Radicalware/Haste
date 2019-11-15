@@ -63,7 +63,7 @@ private:
 	xstring _example;
 
 	usint m_space_size = 2;
-	int m_console_width = os.console_size()[0];
+	int m_console_width = OS::Console_Size()[0];
 	xstring empty_str;
 	bool m_view_all_files = false;
 

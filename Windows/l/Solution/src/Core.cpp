@@ -31,7 +31,7 @@ Core::Core(int argc, char** argv)
 	}
 
 	if (!m_options.dir.size())
-		m_options.dir = os.pwd();
+		m_options.dir = OS::PWD();
 
 
 	// >>> use the code below to dynamically get the executable values <<<
@@ -282,13 +282,13 @@ void Core::add_word_space(size_t count) const
 void Core::print_ls_style()
 {
 
-	if (os.file(m_options.dir)) {
-		cout << os.full_path(m_options.dir) << endl;
+	if (OS::Has_File(m_options.dir)) {
+		cout << OS::Full_Path(m_options.dir) << endl;
 		exit(0);
 	}
 
-    m_nex_vec.add_job(os.dir(m_options.dir, 'f'));
-    m_nex_vec.add_job(os.dir(m_options.dir, 'd'));
+    m_nex_vec.add_job(OS::Dir(m_options.dir, 'f'));
+    m_nex_vec.add_job(OS::Dir(m_options.dir, 'd'));
     m_str_files = std::move(m_nex_vec(0).value());
     m_str_directories = std::move(m_nex_vec(1).value());
     m_nex_vec.clear();
@@ -331,7 +331,8 @@ void Core::print_ls_style()
 
 void Core::print_dir_style()
 {
-	if (os.file(m_options.dir)) {
+	OS os;
+	if (os.Has_File(m_options.dir)) {
 		cout << os.popen("DIR " + m_options.dir).read();
 		exit(0);
 	}
@@ -341,7 +342,7 @@ void Core::print_dir_style()
 	if (m_options.dir.size())
 		dir_out = os.popen("DIR " + m_options.dir).read();
 	else
-		dir_out = os.popen("DIR " + os.pwd()).read();
+		dir_out = os.popen("DIR " + os.PWD()).read();
 
 	m_str_files = dir_out.split(R"(^ Directory of.*$)")[1].strip().split('\n')(2, -2);
 

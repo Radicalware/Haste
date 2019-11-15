@@ -28,9 +28,6 @@
 // Modded Libs
 #include "cc.h"
 
-extern OS  os;  // Operating System Object
-extern SYS sys; // Args Object
-
 using std::vector;
 using std::string;
 using std::cout;

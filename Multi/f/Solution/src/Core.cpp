@@ -1,9 +1,6 @@
 #include "Core.h"
-
-void Core::parse_as_regex(bool input)
-{
-	m_parse_as_regex = input;
-}
+#pragma warning( disable : 4101 )  // for allowing the STL (non-class enum)
+#pragma warning( disable : 26812 ) // for allowing the STL (non-class enum)
 
 void Core::set_case_sensitive()
 {
@@ -17,12 +14,20 @@ void Core::set_dir(const xstring& input, bool use_pwd)
 	else if (input.match(R"(^[A-Z]\:.*$)") && !use_pwd)
 		m_use_full_path = true;
 
-	m_directory = os.full_path(input);
+	m_directory = OS::Full_Path(input);
 }
 
 void Core::set_rex(const xstring& input)
 {
+#if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
     m_rex += input.sub(R"((\\\\|/)+)", "[\\\\]+(?=[^\\\\]|$)") + ')';
+#else
+    m_rex += input.sub(R"(\\\\)", "\\" ) + ')';
+#endif
+}
+
+void Core::set_full_path(){
+    m_use_full_path = true;
 }
 
 void Core::swap_split()
@@ -30,99 +35,63 @@ void Core::swap_split()
     m_swap_split = true;
 }
 
-void Core::gather_files()
+Core::File Core::find_matching_files(xstring& item, Core& core)
 {
-    m_file_lst = os.dir(m_directory, 'd').xrender<xvector<xstring>>([](xstring& dir) { return os.dir(dir, 'r', 'f'); }).expand();
-    m_file_lst += os.dir(m_directory, 'f');
-    cout << cc::cyan << "Files in Dir: " << m_file_lst.size() << cc::reset << endl;
+    Core::File sp;
+    if (!core.m_use_full_path)
+        item = '.' + item.substr(core.m_directory.size(), item.size() - core.m_directory.size());
+
+    sp.splits = item.inclusive_split(core.m_rex, core.m_icase, false);
+    if (sp.splits.size())
+        sp.matched = true;
+
+    return sp;
 }
 
-void Core::find_matching_files()
+void Core::multi_core_scan()
 {
-    // xrender is multi-threaded
-    // "this" is passed with std::ref in but never modified
-    xvector<Splits> file_lst = m_file_lst.xrender<Splits>([this](xstring& item)
-    {
-        xvector<xstring> splits;
-        xvector<xstring> finds;
+    xvector<xstring> dirs_to_scan;
+    dirs_to_scan = OS::Dir(m_directory, 'd').
+        xrender<xvector<xstring>>([](xstring& dir) { return OS::Dir(dir, 'r', 'f'); }).
+        expand();
+    dirs_to_scan += OS::Dir(m_directory, 'f');
+    cout << cc::cyan << "Files in Dir: " << dirs_to_scan.size() << cc::reset << endl;
 
-        if (!m_use_full_path)
-            item = '.' + item.substr(m_directory.size(), item.size() - m_directory.size());
-
-        splits = item.split(m_rex, m_icase);
-        finds = item.findall(m_rex, m_icase);
-        Splits sp;
-        if (finds.size() > 0) {
-            for (size_t i = 0; i < splits.size(); i++) {
-
-#if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
-
-                if(m_swap_split)
-                    sp.rex_off << splits[i].sub(R"(\\\\)", R"(/)");
-                else
-                    sp.rex_off << splits[i].sub(R"(\\\\)", R"(\)");
-                if (i < finds.size()) {
-                    if(m_swap_split)
-                        sp.rex_on << finds[i].sub(R"(\\\\)", R"(/)");
-                    else
-                        sp.rex_on << finds[i].sub(R"(\\\\)", R"(\)");
-                }
-#else // ********************* NIX ***************************************
-                if (m_swap_split)
-                    sp.rex_off << splits[i].sub(R"(/)", R"(\\)");
-                else
-                    sp.rex_off << splits[i];
-
-                if (i < finds.size()) {
-                    if (m_swap_split)
-                        sp.rex_on << finds[i].sub(R"(/)", R"(\\)");
-                    else
-                        sp.rex_on << finds[i];
-                }
-#endif // *****************************************************************
-
-            }
-            sp.not_found = true;
-        }
-        return sp;
-    });
-
-    for(const Splits& files : file_lst) {
-        if (files.rex_on.size() > 0) {
-            for (size_t i = 0; i < files.rex_off.size(); i++) {
-                // files.rex_off[i];
-                cout << cc::white << files.rex_off[i];
-                if (i < files.rex_on.size())
-                    // files.rex_on[i];
-                    cout << cc::green << files.rex_on[i];
-            }
-            cout << '\n';
-        }
-    };
+    m_file_lst = dirs_to_scan.xrender<Core::File>(Core::find_matching_files, std::ref(*this));
 }
 
 void Core::single_core_scan()
 {
-    m_file_lst = os.dir(m_directory, 'r', 'f');
-    
-	xvector<xstring> splits;
-	xvector<xstring> finds;
+    xvector<xstring> dirs_to_scan = OS::Dir(m_directory, 'r', 'f');
+    cout << cc::cyan << "Files in Dir: " << dirs_to_scan.size() << cc::reset << endl;
 
-    for (xstring& item : m_file_lst) {
-		if(!m_use_full_path)
-			item = '.' + item.substr(m_directory.size(), item.size() - m_directory.size());
+    m_file_lst = dirs_to_scan.render<Core::File>(Core::find_matching_files, std::ref(*this));
+}
 
-		splits = item.split(m_rex, m_icase);
-		finds = item.findall(m_rex, m_icase);
-		if (finds.size() > 0) {
-			for (size_t i = 0; i < splits.size(); i++) {
-                // splits[i].sub(R"(\\\\)", R"(\)");
-                cout << cc::white << splits[i].sub(R"(\\\\)", R"(\)");
-                if (i < finds.size())
-                    // finds[i].sub(R"(\\\\)", R"(\)");
-                    cout << cc::green << finds[i].sub(R"(\\\\)", R"(\)");
+void Core::print_files()
+{
+    for (auto& file : m_file_lst)
+    {
+        if (!file.matched)
+            continue;
+
+        bool on  = false;
+
+        if (file.splits[0].scan(m_rex, m_icase))
+            on = true;
+        
+
+        for (auto& seg : file.splits) 
+        {
+            if (on) {
+                cout << cc::red << cc::bold << seg << cc::reset;
+                on = false;
             }
-			cout << '\n';
-		}
+            else {
+                cout << seg;
+                on = true;
+            }
+        }
+        cout << '\n';
     }
 }
