@@ -10,6 +10,7 @@ struct File
         unsigned long int line_num = 0;    
         static const double max_line_len;
         Splits();
+        Splits(const xstring& line);
         Splits(const Splits& split);
         xstring& operator[](size_t val);
     };
@@ -27,8 +28,8 @@ struct File
     bool binary  = false;
     bool matches = false;
     bool binary_search_on = false;
+    bool indent = false;
     xstring err;
-    //xstring* err;
 
     void print(const xstring& rex);
     void print_divider() const;

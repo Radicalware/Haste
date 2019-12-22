@@ -1,6 +1,42 @@
 #include "Core.h"
 #pragma warning( disable : 26812 ) // to allow our rxm enum even though it isn't a class enum
 
+Core::~Core()
+{
+    if (m_piped_data != nullptr)
+        delete m_piped_data;
+}
+
+void Core::piped_scan()
+{
+    m_piped_data = new File;
+    File& file = *m_piped_data;
+
+    file.path = "Piped Data";
+    if(m_entire)
+        file.indent = true;
+
+    xstring line;
+    unsigned long int counter = 0;
+
+    while (getline(std::cin, line))
+    {
+        counter++;
+        File::Splits sp;
+        sp.splits = line.inclusive_split(m_rex, m_icase, false);
+        if (sp.splits.size())
+        {
+            sp.line_num = counter;
+            file.lines << sp;
+        }
+        else if (m_entire) {
+            sp.line_num = counter;
+            sp.splits << line;
+            file.lines << sp;
+        }
+    }
+}
+
 void Core::set_dir(const xstring& input, bool use_pwd)
 {
     if (input.scan(R"(\.\.[/\\])"))
@@ -15,8 +51,20 @@ void Core::set_rex(const xstring& input){
     m_rex += input.sub(R"((\\\\|/)+)", "[\\\\]+(?=[^\\\\]|$)") + ')';
 }
 
-void Core::set_full_path(){
+void Core::set_avoid_regex(const xvector<xstring*>& avoid_lst){
+    m_avoid_lst = avoid_lst;
+}
+
+void Core::set_full_path_on(){
     m_use_full_path = true;
+}
+
+void Core::set_only_name_on(){
+    m_only_name_files = true;
+}
+
+void Core::set_entire_on(){
+    m_entire = true;
 }
 
 void Core::set_case_sensitive_on(){
@@ -40,8 +88,12 @@ File Core::scan_file(xstring& path, const Core& core, const bool binary_search_o
     }
 
 
-    file.matches = file.data.scan(core.m_rex, core.m_icase);
-    if (!file.matches)
+    bool avoid = static_cast<bool>(core.m_avoid_lst.size());
+    bool matches = false;
+    if(!avoid)
+        matches = file.data.scan(core.m_rex, core.m_icase);
+
+    if ((!avoid) && (!matches))
     {
         file.data.clear();
         return file;
@@ -57,22 +109,31 @@ File Core::scan_file(xstring& path, const Core& core, const bool binary_search_o
         }
     }
 
-
-    unsigned long int counter = 0;
-    for (const xstring& line : file.data.split('\n'))
-    {
-        counter++;
-        // The following line actually slows it down
-        // if (!line.scan(core.m_rex))
-        //    continue;
-
-        File::Splits sp;
-        sp.splits = line.inclusive_split(core.m_rex, core.m_icase, false);
-
-        if (sp.splits.size())
+    if (core.m_only_name_files) {
+        if (!avoid)
+            file.matches = (file.data.scan(core.m_rex, core.m_icase));
+        else
+            file.matches = (file.data.scan(core.m_rex, core.m_icase) && !file.data.scan_list(core.m_avoid_lst));
+    }
+    else {
+        unsigned long int counter = 0;
+        for (const xstring& line : file.data.split('\n'))
         {
-            sp.line_num = counter;
-            file.lines << sp;
+            if (avoid) {
+                if (line.scan_list(core.m_avoid_lst, core.m_icase))
+                    continue;
+            }
+
+            counter++;
+            File::Splits sp;
+            sp.splits = line.inclusive_split(core.m_rex, core.m_icase, false);
+
+            if (sp.splits.size())
+            {
+                file.matches = true;
+                sp.line_num = counter;
+                file.lines << sp;
+            }
         }
     }
     file.data.clear();
@@ -102,16 +163,39 @@ void Core::single_core_scan()
 
 void Core::print()
 {
-    for (File& file : m_files)
+    if (m_piped_data != nullptr)
     {
-        if (file.binary || file.err.size())
-            continue;
-        file.print(m_rex);
-    };
+        m_piped_data->print(m_rex);
 
+        return;
+    }
+
+    if (m_only_name_files) {   // print what the user was looking for
+        this->print_divider();
+        bool match_found = false;
+        for (File& file : m_files)
+        {
+            if (file.binary || file.err.size())
+                continue;
+            if (file.matches) {
+                file.path.print();
+                match_found = true;
+            }
+        }
+        if (!match_found)
+            cout << "No Matches Found\n";
+    }
+    else {
+        for (File& file : m_files)
+        {
+            if (file.binary || file.err.size())
+                continue;
+            file.print(m_rex);
+        };
+    }
     this->print_divider();
     bool binary_matched = false;
-    for (const File& file : m_files)
+    for (const File& file : m_files) // print binary names
     {
         if (file.err.size())
             continue;
@@ -125,7 +209,7 @@ void Core::print()
         this->print_divider();
 
     bool err_matched = false;
-    for (const File& file : m_files)
+    for (const File& file : m_files) // print errors
     {
         if (file.err.size()) {
             cout << file.err << '\n';

@@ -32,24 +32,37 @@ int help(int ret_err) {
     ------------------------------------------------------------------
       Key    |   Key (long) |  Value
     ------------------------------------------------------------------
-      -r     |  --regex     |  (str)  Regex to search for
-      -d     |  --dir       |  (str)  Directory to search in
-      -f     |  --full      |  (bool) Show the Full Path
-      -o     |  --one       |  (bool) run under only one thread
-      -t     |  --threads   |  (int)  thread count
-      -c     |  --case      |  (bool) Case-Sensitive Regex
-      -b     |  --binary    |  (bool) Search Binary Files 
+      REQUIRED
+    ------------------------------------------------------------------
+      -r     |  --regex     |  (str)   Regex To Search For
+    ------------------------------------------------------------------
+      USUAL ARGUMENTS
+    ------------------------------------------------------------------
+      -d     |  --dir       |  (str)   Directory To Search In
+      -t     |  --threads   |  (int)   Set Thread Count
+      -a     |  --avoid     |  (array) avoid these regex per line
+      -f     |  --full      |  (bool)  Show the Full Path
+      -c     |  --case      |  (bool)  Case-Sensitive Regex
+      -b     |  --binary    |  (bool)  Search Binary Files 
+      -n     |  --name      |  (bool)  Only Name the Files Found
+    ------------------------------------------------------------------
+       THESE CHANGE THE STANDARD PROCEDURE
+    ------------------------------------------------------------------
+      -o     |  --one       |  (bool)  Run Only Under One Thread
+    ------------------------------------------------------------------
+      -p     |  --pipe      |  (bool)  Consume Piped Data
+      -e     |  --entire    |  (bool)  If Data Is Piped, Show All Data
     ------------------------------------------------------------------
 
     If no '-' are found in args are parsed as argv[x][0] 
     then the following parsed method will be uesd. 
 
-    if (argc == 2)
-        arg[1] ==  "regex"
+    if (argc == 2) // requires stdin
+        argv[1] =  "regex"
 
     if (argc == 3)
-        argv[1] == "regex"
-        argv[2] == "directory to search in"
+        argv[1] = "directory to search in"
+        argv[2] = "regex"
 
     if (argc > 3)
         Use the KVPs as described in the table above.
@@ -62,62 +75,79 @@ int main(int argc, char** argv)
 {	
     Timer t;
     SYS sys;
-    sys.alias('r', "--regex");
-    sys.alias('d', "--dir");
-    sys.alias('f', "--full");
-    sys.alias('o', "--one");
+    sys.alias('r', "--regex"); // -- always required
+
+    sys.alias('d', "--dir");   // -- usual bools
     sys.alias('t', "--threads");
+    sys.alias('a', "--avoid");
+    sys.alias('f', "--full");
     sys.alias('c', "--case");
     sys.alias('b', "--binary");
+    sys.alias('n', "--name");
+
+    sys.alias('o', "--one");    // -- setting only one thread path is not the same as -t 1
+
+
+    sys.alias('p', "--pipe");   // -- piped path
+    sys.alias('e', "--entire");
+
     sys.set_args(argc, argv);
 
+    Core core;
     if (sys.help()) 
         return help(0);
-    
-    Core core;
 
-    if (sys('f'))
-        core.set_full_path();
+    auto find_rex_arg = [&core, &sys]() -> void { // note: argv[0] is the program path
+        if (sys.argc() == 2 && !sys('r')) // no --regex && 1 prog args == set argv[1] as the regex
+            core.set_rex(sys[1]);
+        else if (sys.argc() > 2 && !sys('r'))  // no --regex && over 1 prog arg == set argv[2] as the regex
+            core.set_rex(sys[2]);
+        else
+            core.set_rex(*sys['r'][0]);
+    };
 
-    if (!sys.key_used()) {
+    auto set_bools = [&core, &sys]() -> void {
+
+        if (!sys('d')) core.set_dir(OS::PWD(), true);
+        else           core.set_dir(*sys['d'][0]);
+
+        if (sys('t')) NX_Threads::Set_Thread_Count((*sys['t'][0]).to_int());
+        if (sys('a')) core.set_avoid_regex(sys['a']);
+        if (sys('f')) core.set_full_path_on();
+        if (sys('c')) core.set_case_sensitive_on();
+        if (sys('b')) core.set_binary_on();
+        if (sys('n')) core.set_only_name_on();
+    };
+
+    // use piped scan if there is ony one arg and it is not a key
+    if ((sys.argc() == 2 && sys[1][0] != '-') || sys('p'))
+    {
+        find_rex_arg();
+        set_bools();
+
+        core.piped_scan();
+        core.print();
+        return 0; // << -------- return ----------------------
+    }
+
+    else if (!sys.key_used()) {
         if (argc == 2) {
             core.set_rex(argv[1]);
             core.set_dir(OS::PWD(), true);
         }
         else if (argc == 3) {
-            core.set_rex(argv[1]);
-            core.set_dir(argv[2]);
+            core.set_dir(argv[1]);
+            core.set_rex(argv[2]);
         }
         else {
-            help(1);
+            return help(1); // << -------- return -----------
         }
     }
-    else {
-
-        // If you didn't use a regex as argv[1] && If you didn't specify the --regex kvp
-        // You should use -r <regex> but you can omit the '-r' if you have argv[1] as your regex
-        if (sys[1][0] == '-' && !sys('r'))
-            return help(1);
-        else if (!sys('r'))
-            core.set_rex(sys[1]); // set argv[1] as the regex
-        else
-            core.set_rex(*sys['r'][0]);
-
-        if (sys('d'))
-            core.set_dir(*sys['d'][0]);
-        else
-            core.set_dir(OS::PWD(), true);
-
+    else 
+    {
+        find_rex_arg();
+        set_bools();
     }
-
-    if (sys('c'))
-        core.set_case_sensitive_on();
-
-    if (sys('b')) 
-        core.set_binary_on();
-    
-    if (sys('t'))
-        NX_Threads::Set_Thread_Count((*sys['t'][0]).to_int());
 
     core.print_divider();
     if (sys('o')) {
@@ -135,4 +165,5 @@ int main(int argc, char** argv)
 	
 	return 0;
 }
+
 

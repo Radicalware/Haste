@@ -70,7 +70,7 @@ private:
 public:
 	Core(int argc, char** argv); 
 	~Core(); 
-
+	bool exists = false;
 private:
 	bool add_dir_items(xstring& item);
 	void trim(xstring& item);

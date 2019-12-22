@@ -1,9 +1,6 @@
-
 cmake_minimum_required(VERSION 3.10)
 
 SET(THIS l)
-project (${THIS})
-
 
 if(UNIX)
 	message("This Tool was not designed for Nix Based Systems")
@@ -11,60 +8,19 @@ if(UNIX)
     exit()
 endif()
 
-message("")
-message("--------------------------------------------------------------------------------")
-message("THIS:              ${THIS}")
-message("BUILD_TYPE:        ${BUILD_TYPE}")
-message("INSTALL_PREFIX:    ${INSTALL_PREFIX}")
-message("EXT_HEADER_PATH:   ${EXT_HEADER_PATH}")
-message("EXT_BIN_PATH:      ${EXT_BIN_PATH}")
-message("MODULE_PATH:       ${MODULE_PATH}")
-message("--------------------------------------------------------------------------------")
+# -------------------------- CONFIG -----------------------------------------------------
 
-# -------------------------- ARGUMENTS ----------------------------------------
-set(CMAKE_BUILD_TYPE "${BUILD_TYPE}")
-if(MSVC)
-    if("${BUILD_TYPE}" STREQUAL "Release")
-        message("Buidling with -O2 ${BUILD_TYPE}")
-        add_definitions( "-O2" )
-    endif()
+if(WIN32)
+    set(RADICAL_PATH "C:/Source/CMake/Modules")
 else()
-    set(LINUX_ARGS "-std=c++17 -Wfatal-errors -finput-charset=UTF-8 -fPIC -pthread")
-    if("${BUILD_TYPE}" STREQUAL "Release")
-        message("Buidling with -O2 ${BUILD_TYPE}")
-        set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS_INIT}  ${LINUX_ARGS} -O2")
-        set(CMAKE_C_FLAGS "-O2")
-    else()
-        set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS_INIT}  ${LINUX_ARGS} -g2")
-        set(CMAKE_C_FLAGS "-g2")
-    endif()
+    set(RADICAL_PATH "/opt/Radicalware/CMake_Modules")
 endif()
-# -------------------------- ARGUMENTS ----------------------------------------
-# -------------------------- CONFIGURATION ------------------------------------
-set(BUILD_DIR ${CMAKE_SOURCE_DIR}/Solution)
-set(INC       ${BUILD_DIR}/include)
-set(SRC       ${BUILD_DIR}/src)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${INC}) 
-set(CMAKE_CONFIGURATION_TYPES ${BUILD_TYPE} CACHE STRING "" FORCE)
-set(CMAKE_MODULE_PATH ${MODULE_PATH})
+include("${RADICAL_PATH}/Radical-App-Config.cmake")
 
-if(MSVC)
-    SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/bin")
-    SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/bin")
+# -------------------------- BUILD ------------------------------------------------------
 
-    SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_lDEBUG   "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
-    SET( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
-
-    SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG   "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
-    SET( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
-else()
-    set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BUILD_TYPE}")
-    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/bin")
-    set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${BUILD_TYPE}/lib")
-endif() 
-# -------------------------- CONFIGURATION ------------------------------------
-# -------------------------- BUILD --------------------------------------------
+project (${THIS})
 
 add_executable(${THIS}
     ${SRC}/${THIS}.cpp
@@ -83,38 +39,19 @@ find_package(xmap)
 find_package(OS)
 find_package(cc)
 
-target_link_libraries( ${THIS}
-    PRIVATE		
-        radical::Nexus
-        radical::xvector
-        radical::xstring
-        radical::xmap
-        radical::OS
-		
-        radical_mod::cc
+target_link_libraries( ${THIS} PRIVATE		
+
+    radical::Nexus
+    radical::xvector
+    radical::xstring
+    radical::xmap
+    radical::OS
+	
+    radical_mod::cc
 )
-# -------------------------- BUILD --------------------------------------------
+
 # -------------------------- INSTALL ------------------------------------------
 
-install(TARGETS ${THIS} DESTINATION ${INSTALL_PREFIX}/../Applications/Build/${BUILD_TYPE})
+include("${RADICAL_PATH}/Radical-App-Install.cmake")
 
-install( 
-    TARGETS       OS cc 
-    DESTINATION   ${INSTALL_PREFIX}/../Applications/Build/${BUILD_TYPE}/bin
-)
-install(
-    TARGETS       Nexus xvector xstring xmap 
-    DESTINATION   ${INSTALL_PREFIX}/../Applications/Build/${BUILD_TYPE}/lib
-)
-
-# Header/Src Files
-install (   
-    DIRECTORY           ${BUILD_DIR}/include 
-    DESTINATION         ../Applications/Solutions/${THIS}
-)
-install (   
-    DIRECTORY           ${BUILD_DIR}/src 
-    DESTINATION         ../Applications/Solutions/${THIS}
-)
-# -------------------------- INSTALL ------------------------------------------
 # -------------------------- END ----------------------------------------------

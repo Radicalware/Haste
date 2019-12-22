@@ -98,21 +98,24 @@ void File::print(const xstring& rex)
         double padding = File::Splits::max_line_len - std::to_string(line.line_num).length();
         cout << std::string(static_cast<size_t>(padding), ' ');
 
-        line[0] = line[0].sub(R"(^[\s]*)", "");
+        if(!this->indent)
+            line[0] = line[0].sub(R"(^[\s]*)", ""); // adjust rows so they start to the left
 
         if (line.splits.join().size() > 300) {
             cout << "Line Over 300 Char Limit!\n";
             continue;
         }
-
-        for (size_t i = 0; i < line.splits.size(); i++)
-        {
-            if (on)
-                cout << cc::red << cc::bold << line[i] << cc::reset;
-            else
-                cout << line[i];
-            on = !on;
-        }
+        if (line.splits.size() == 1)
+            cout << line[0];
+        else
+            for (size_t i = 0; i < line.splits.size(); i++)
+            {
+                if (on)
+                    cout << cc::red << cc::bold << line[i] << cc::reset;
+                else
+                    cout << line[i];
+                on = !on;
+            }
         cout << "\n";
     };
     if(printed)
@@ -126,8 +129,11 @@ void File::print_divider() const
 
 const double File::Splits::max_line_len = 7;
 
-File::Splits::Splits()
-{
+File::Splits::Splits() {
+}
+
+File::Splits::Splits(const xstring& line){
+    splits << line;
 }
 
 File::Splits::Splits(const Splits& split)

@@ -4,6 +4,17 @@
 
 ---------------------------------------------------------------------
 
+11/08/2019 >> Haste v6.5.1
+
+Just a patch to make Haste compatible with the new versions of 
+Radicalware Libs. I had to go out of my way to make the stdout
+work for l, f, and afs which now I could speed things up with
+xstirng.color and not need to do so much split work. Hopefully,
+I can accomplisht this before too long. Socket.h for Linux will
+probably come next.
+
+---------------------------------------------------------------------
+
 11/08/2019 >> Haste v6.5.0
 
 afs now runs much faster due to using C style way of reading text

@@ -30,8 +30,12 @@ Core::Core(int argc, char** argv)
 		}
 	}
 
-	if (!m_options.dir.size())
+	if (m_options.dir.size())
+		exists = OS::Has(m_options.dir);
+	else {
 		m_options.dir = OS::PWD();
+		exists = true;
+	}
 
 
 	// >>> use the code below to dynamically get the executable values <<<
@@ -78,7 +82,7 @@ void Core::trim(xstring& item)
 	else
 		item = item.sub(R"(^.*[/\\])", "");
 
-	item.strip();
+	item.trim();
 	if (item.scan(' '))
 		item = '"' + item + '"';
 	else
@@ -315,7 +319,7 @@ void Core::print_ls_style()
 
 	if (m_directories.size() == 0 && m_files.size() == 0) {
 		cout << ">> Empty Directory <<\n";
-		exit(0);
+        return;
 	}
 	
 	if (m_files.size()) cout << '\n';
@@ -334,7 +338,7 @@ void Core::print_dir_style()
 	OS os;
 	if (os.Has_File(m_options.dir)) {
 		cout << os.popen("DIR " + m_options.dir).read();
-		exit(0);
+        return;
 	}
 
 	xstring dir_out;
@@ -344,7 +348,7 @@ void Core::print_dir_style()
 	else
 		dir_out = os.popen("DIR " + os.PWD()).read();
 
-	m_str_files = dir_out.split(R"(^ Directory of.*$)")[1].strip().split('\n')(2, -2);
+	m_str_files = dir_out.split(R"(^ Directory of.*$)")[1].trim().split('\n')(2, -2);
 
 	if(m_options.show_all_files){
 		for (xstring& item : m_str_files) {
@@ -384,7 +388,7 @@ void Core::print_dir_style()
 
 	if (m_directories.size() == 0 && m_files.size() == 0) {
 		cout << ">> Empty Directory <<\n";
-		exit(0);
+        return;
 	}
 
 	this->dir_vals_out(m_directories);

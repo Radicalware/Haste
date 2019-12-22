@@ -10,11 +10,13 @@ int main(int argc, char** argv)
 
 	sys.alias('r', "--regex");
 	sys.alias('d', "--dir");
+    sys.alias('t', "--threads");
+    sys.alias('g', "--get");
 	sys.alias('f', "--full");
     sys.alias('o', "--one");
-    sys.alias('t', "--threads");
     sys.alias('c', "--case");
     sys.alias('s', "--swap");
+
 	sys.set_args(argc, argv);
 
 	if (argc == 1 || sys.help())
@@ -57,10 +59,13 @@ int main(int argc, char** argv)
             core.set_case_sensitive();
 	}
 
+    if (sys('g'))
+        core.return_only(*sys['g'][0]);
+
     Nexus<void> nxv;
-    if (sys('t')) {
+    if (sys('t')) 
         nxv.Set_Thread_Count((*sys['t'][0]).to_int());
-    }
+    
     
     Timer t;
 	if (sys('o')) {
@@ -83,21 +88,25 @@ int main(int argc, char** argv)
 
 int help(int val){
 
-	cout << R"(
+	cout << R"help(
     f is used to Find Files
     f used as f.exe
 
-    -------------------------------------------------------
+    -----------> SET COLORS ON FOR WINDOWS <-------------------------
+    Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1
+
+    -------------------------------------------------------------------------------
       Key    |   Key (long) |  Value
-    -------------------------------------------------------
-      -r     |  --regex     |  Regex to search for
-      -d     |  --dir       |  Directory to search in
-      -f     |  --full      |  Show the Full Path
-      -o     |  --one       |  run under only one thread
-      -t     |  --threads   |  int thread count
-      -c     |  --case      |  Case-Sensitive Regex
-      -s     |  --swap      |  swap slash side
-    -------------------------------------------------------
+    -------------------------------------------------------------------------------
+      -r     |  --regex     |  <string> Regex to search for
+      -d     |  --dir       |  <string> Directory to search in
+      -g     |  --get       |  <string> return types [files/dirs/both]
+      -t     |  --threads   |  <int>    thread count
+      -f     |  --full      |  <bool>   Show the Full Path
+      -o     |  --one       |  <bool>   run under only one thread
+      -c     |  --case      |  <bool>   Case-Sensitive Regex
+      -s     |  --swap      |  <bool>   swap slash side
+    -------------------------------------------------------------------------------
 
     If no '-' are found in args are parsed as argv[x][0] 
     then the following parsed method will be uesd. 
@@ -112,6 +121,6 @@ int help(int val){
     if (argc > 3)
         Use the KVPs as described in the table above.
 
-)";
+)help";
     return 0;
 }

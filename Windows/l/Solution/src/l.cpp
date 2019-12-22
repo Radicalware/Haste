@@ -8,12 +8,16 @@ int help();
 
 int main(int argc, char** argv)
 {
-	Nexus<>::Construct();
-	Core core(argc, argv);	
+	Nexus<>::Start();
+	Core core(argc, argv);
+
+	if (!core.exists) {
+		cout << "'" << core.options().dir.red().reset() << "' does not exist!\n";
+		return 0;
+	}
 
 	if (core.options().help)
 		return help();
-
 
 	if (core.options().dir_style)
 		core.print_dir_style();
@@ -21,7 +25,7 @@ int main(int argc, char** argv)
 		core.print_ls_style();
 
 	cout << cc::reset;
-	Nexus<>::Dispose();
+	Nexus<>::Stop();
 	return 0;
 }
 

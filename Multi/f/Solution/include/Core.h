@@ -4,20 +4,12 @@
 
 #include "LibLoc.h"
 
-#include<thread>
-#include<mutex>
-
 class Core
 {
-    struct File
-    {
-        xvector<xstring> splits;
-        bool matched = false; 
-        // matching bool to bool is much faster than the .size() function
-        // .size runs a function, it doesn't just return bool.
-    };
+    char m_find_mod1 = 'f';
+    char m_find_mod2 = 'f';
 
-    xvector<File> m_file_lst;
+    xvector<xstring> m_file_lst;
     xstring m_directory;
 
     xstring m_rex = '(';
@@ -30,7 +22,7 @@ class Core
 
 	bool m_use_full_path = false;
     bool m_swap_split = false;
-    
+
 public:
     Core core() {};
     void set_case_sensitive();
@@ -39,8 +31,9 @@ public:
 	void set_rex(const xstring& input);
     void set_full_path();
     void swap_split();
+    void return_only(const xstring& ret_only);
 
-    static Core::File find_matching_files(xstring& item, Core& core);
+    static xstring find_matching_files(xstring& item, Core& core);
 
     void multi_core_scan();
     void single_core_scan();
