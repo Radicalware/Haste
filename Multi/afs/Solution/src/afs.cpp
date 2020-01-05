@@ -20,8 +20,12 @@
 
 // DEBUG ARGS: -r rxm::icase -d C:\source\Tools\afs -o
 
-#include "LibLoc.h"
+#include "Timer.h"
+#include "SYS.h"
+#include "xstring.h"
+
 #include "Core.h"
+#include "Options.h"
 
 int help(int ret_err) {
     cout << R"(
@@ -48,10 +52,12 @@ int help(int ret_err) {
     ------------------------------------------------------------------
        THESE CHANGE THE STANDARD PROCEDURE
     ------------------------------------------------------------------
-      -o     |  --one       |  (bool)  Run Only Under One Thread
+      -o     |  --one       |  (bool)  Run Only Under 'One' Thread
+    ------------------------------------------------------------------
+      -m     |  --modify    |  (bool)  Open the File to 'Modify' It
     ------------------------------------------------------------------
       -p     |  --pipe      |  (bool)  Consume Piped Data
-      -e     |  --entire    |  (bool)  If Data Is Piped, Show All Data
+      -e     |  --entire    |  (bool)  Show the entire 
     ------------------------------------------------------------------
 
     If no '-' are found in args are parsed as argv[x][0] 
@@ -75,6 +81,7 @@ int main(int argc, char** argv)
 {	
     Timer t;
     SYS sys;
+    Options option;
     sys.alias('r', "--regex"); // -- always required
 
     sys.alias('d', "--dir");   // -- usual bools
@@ -86,44 +93,50 @@ int main(int argc, char** argv)
     sys.alias('n', "--name");
 
     sys.alias('o', "--one");    // -- setting only one thread path is not the same as -t 1
-
+    sys.alias('m', "--modify");
 
     sys.alias('p', "--pipe");   // -- piped path
     sys.alias('e', "--entire");
 
     sys.set_args(argc, argv);
 
-    Core core;
+    Core core(option);
     if (sys.help()) 
         return help(0);
 
-    auto find_rex_arg = [&core, &sys]() -> void { // note: argv[0] is the program path
+    auto find_rex_arg = [&core, &sys, &option]() -> void 
+    { // note: argv[0] is the program path
         if (sys.argc() == 2 && !sys('r')) // no --regex && 1 prog args == set argv[1] as the regex
-            core.set_rex(sys[1]);
+            option.set_rex(sys[1]);
         else if (sys.argc() > 2 && !sys('r'))  // no --regex && over 1 prog arg == set argv[2] as the regex
-            core.set_rex(sys[2]);
+            option.set_rex(sys[2]);
         else
-            core.set_rex(*sys['r'][0]);
+            option.set_rex(*sys['r'][0]);
     };
 
-    auto set_bools = [&core, &sys]() -> void {
-
-        if (!sys('d')) core.set_dir(OS::PWD(), true);
-        else           core.set_dir(*sys['d'][0]);
+    auto config_options = [&core, &sys, &option]() -> void 
+    {
+        if (!sys('d')) option.set_dir(OS::PWD(), true);
+        else           option.set_dir(*sys['d'][0]);
 
         if (sys('t')) NX_Threads::Set_Thread_Count((*sys['t'][0]).to_int());
-        if (sys('a')) core.set_avoid_regex(sys['a']);
-        if (sys('f')) core.set_full_path_on();
-        if (sys('c')) core.set_case_sensitive_on();
-        if (sys('b')) core.set_binary_on();
-        if (sys('n')) core.set_only_name_on();
+        if (sys('a'))  option.set_avoid_regex(sys['a']);
+        if (sys('f')) option.use_full_path = true;
+        if (sys('c')) option.rex.mods = rxm::ECMAScript;
+        if (sys('b')) option.binary_search_on = true;
+        if (sys('n')) option.only_name_files = true;
+        if (sys('m')) option.modify = true;
+
+        if (sys('p')) option.piped = true;
+        if (sys('e')) option.entire = true;
     };
 
+    config_options();
+
     // use piped scan if there is ony one arg and it is not a key
-    if ((sys.argc() == 2 && sys[1][0] != '-') || sys('p'))
+    if ((sys.argc() == 2 && sys[1][0] != '-') || option.piped)
     {
         find_rex_arg();
-        set_bools();
 
         core.piped_scan();
         core.print();
@@ -132,12 +145,12 @@ int main(int argc, char** argv)
 
     else if (!sys.key_used()) {
         if (argc == 2) {
-            core.set_rex(argv[1]);
-            core.set_dir(OS::PWD(), true);
+            option.set_rex(argv[1]);
+            option.set_dir(OS::PWD(), true);
         }
         else if (argc == 3) {
-            core.set_dir(argv[1]);
-            core.set_rex(argv[2]);
+            option.set_dir(argv[1]);
+            option.set_rex(argv[2]);
         }
         else {
             return help(1); // << -------- return -----------
@@ -146,21 +159,20 @@ int main(int argc, char** argv)
     else 
     {
         find_rex_arg();
-        set_bools();
     }
 
     core.print_divider();
     if (sys('o')) {
         core.single_core_scan();
         core.print();
-        cout << cc::cyan << "Single-Threaded\n" << cc::reset;
+        cout << Color::Cyan << "Single-Threaded\n" << Color::Mod::Reset;
     }
     else {
         core.multi_core_scan();
         core.print();
-        cout << cc::cyan << "Threads Availible: " << NX_Threads::Thread_Count_Available() << cc::reset << endl;
+        cout << Color::Cyan << "Threads Availible: " << NX_Threads::Thread_Count_Available() << Color::Mod::Reset << endl;
     }
-    cout << cc::cyan << "Time: " << t << cc::reset << endl;
+    cout << Color::Cyan << "Time: " << t << Color::Mod::Reset << endl;
     core.print_divider();
 	
 	return 0;

@@ -5,12 +5,6 @@ File::File()
 {
 }
 
-File::~File()
-{
-    //if (err != nullptr) 
-    //    delete err;
-}
-
 File::File(const File& file)
 {
     this->operator=(file);
@@ -64,6 +58,12 @@ File::File(const xstring& i_path, bool ibinary_search_on)
     }
 }
 
+File::~File()
+{
+    //if (err != nullptr) 
+    //    delete err;
+}
+
 void File::operator=(const File& file)
 {
     this->path = file.path;
@@ -75,74 +75,34 @@ void File::operator=(const File& file)
 }
 
 
-void File::print(const xstring& rex)
+void File::print()
 {
     bool printed = false;
-    if (this->matches && !this->binary) {
+    char spacer[3];
+    if (!piped_data)
+        strncpy(spacer, "\n\n\0", 3);
+    else
+        strncpy(spacer, "\0", 3);
+
+    if (this->matches && !this->binary)
+    {
         this->print_divider();
-        cout << cc::cyan << ">>> FILE: >>> " << this->path.sub(R"(\\\\)", "\\") << "\n\n" << cc::reset;
+#pragma warning (suppress : 6053) // Above I enusre we get null bytes for spacer
+        cout << Color::Mod::Bold << Color::Cyan << ">>> FILE: >>> " << this->path << spacer << Color::Mod::Reset;
         printed = true;
     }
 
     bool line_match = false;
-    for (File::Splits& line : lines)
+    for (const xstring& line : lines)
     {
-        if (line.splits.size() == 0)
-            continue;
-
-        cout << cc::cyan << line.line_num << ": " << cc::reset;
-        bool on = false;
-        if (line[0].match(rex))
-            on = true;
-
-        double padding = File::Splits::max_line_len - std::to_string(line.line_num).length();
-        cout << std::string(static_cast<size_t>(padding), ' ');
-
-        if(!this->indent)
-            line[0] = line[0].sub(R"(^[\s]*)", ""); // adjust rows so they start to the left
-
-        if (line.splits.join().size() > 300) {
-            cout << "Line Over 300 Char Limit!\n";
-            continue;
-        }
-        if (line.splits.size() == 1)
-            cout << line[0];
-        else
-            for (size_t i = 0; i < line.splits.size(); i++)
-            {
-                if (on)
-                    cout << cc::red << cc::bold << line[i] << cc::reset;
-                else
-                    cout << line[i];
-                on = !on;
-            }
-        cout << "\n";
-    };
-    if(printed)
+        if (line.size())
+            line.print();
+    }
+    if(printed && !piped_data)
         cout << '\n';
 }
 
 void File::print_divider() const
 {
-    cout << cc::blue << xstring(OS::Console_Size()[0], '-') << cc::reset;
-}
-
-const double File::Splits::max_line_len = 7;
-
-File::Splits::Splits() {
-}
-
-File::Splits::Splits(const xstring& line){
-    splits << line;
-}
-
-File::Splits::Splits(const Splits& split)
-{
-    splits = split.splits;
-    line_num = split.line_num;
-}
-
-xstring& File::Splits::operator[](size_t val)
-{
-    return splits[val];
+    cout << Color::Blue << xstring(OS::Console_Size()[0], '-') << Color::Mod::Reset;
 }

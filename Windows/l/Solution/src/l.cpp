@@ -1,4 +1,4 @@
-﻿#include "LibLoc.h"
+#include "LibLoc.h"
 #include "Core.h"
 
 using std::cout;

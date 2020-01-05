@@ -1,5 +1,8 @@
-#include "LibLoc.h"
+#include "Options.h"
 #include "Core.h"
+
+#include "Timer.h"
+#include "SYS.h"
 
 
 int help(int val = 0);
@@ -16,27 +19,27 @@ int main(int argc, char** argv)
     sys.alias('o', "--one");
     sys.alias('c', "--case");
     sys.alias('s', "--swap");
+    sys.alias('m', "--modify");
 
 	sys.set_args(argc, argv);
 
 	if (argc == 1 || sys.help())
 		return help();
 
-    Core core;
+    Options option;
+    Core core(option);
 
-    if (sys('f'))
-        core.set_full_path();
+    if (sys('f')) option.use_full_path = true;;
+    if (sys('s')) option.swap_split    = true;
 
-    if (sys('s'))
-        core.swap_split();
 	if (!sys.key_used()) {
 		if (argc == 2) {
-			core.set_rex(argv[1]);
-			core.set_dir(OS::PWD(), true);
+            option.set_rex(argv[1]);
+            option.set_dir(OS::PWD(), true);
 		}
 		else if (argc == 3) {
-			core.set_rex(argv[1]);
-			core.set_dir(argv[2]);
+            option.set_rex(argv[1]);
+            option.set_dir(argv[2]);
 		}
 		else {
 			help(1);
@@ -45,42 +48,37 @@ int main(int argc, char** argv)
 	else{
         if (sys[1][0] == '-' && !sys('r'))
             return help(1);
-        else if (!sys('r'))
-            core.set_rex(sys[1]); // set argv[1] as the regex
-        else
-            core.set_rex(*sys['r'][0]);
-		
-		if (sys('d'))
-			core.set_dir(*sys['d'][0]);
-		else
-			core.set_dir(OS::PWD(), true);
 
-        if (sys('c'))
-            core.set_case_sensitive();
+        else if (!sys('r')) option.set_rex(sys[1]); // set argv[1] as the regex
+        else      option.set_rex(*sys['r'][0]);
+		
+		if (sys('d')) option.set_dir(*sys['d'][0]);
+		else          option.set_dir(OS::PWD(), true);
+
+        if (sys('c')) option.rex.mods = rxm::ECMAScript;
 	}
 
-    if (sys('g'))
-        core.return_only(*sys['g'][0]);
+    if (sys('g')) option.return_only(*sys['g'][0]);
+    if (sys('m')) option.modify = true;
 
     Nexus<void> nxv;
-    if (sys('t')) 
-        nxv.Set_Thread_Count((*sys['t'][0]).to_int());
+    if (sys('t')) nxv.Set_Thread_Count((*sys['t'][0]).to_int());
     
     
     Timer t;
 	if (sys('o')) {
 		core.single_core_scan();
         core.print_files();
-        cout << cc::cyan;
+        cout << Color::Cyan;
         cout << "Single-Threaded\n";
 	}
 	else {
         core.multi_core_scan();
         core.print_files();
-        cout << cc::cyan;
+        cout << Color::Cyan;
         cout << "Threads Availible: " << NX_Threads::Thread_Count_Available() << endl;
 	}
-    cout << "Time: " << t << cc::reset << endl;
+    cout << "Time: " << t << Color::Mod::Reset << endl;
 
     return 0;
 }
@@ -92,7 +90,7 @@ int help(int val){
     f is used to Find Files
     f used as f.exe
 
-    -----------> SET COLORS ON FOR WINDOWS <-------------------------
+    -----------> SET COLORS ON FOR WINDOWS <--------------------------
     Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1
 
     -------------------------------------------------------------------------------
@@ -106,6 +104,7 @@ int help(int val){
       -o     |  --one       |  <bool>   run under only one thread
       -c     |  --case      |  <bool>   Case-Sensitive Regex
       -s     |  --swap      |  <bool>   swap slash side
+      -m     |  --modify    |  <bool>   Open files to 'Modify' 
     -------------------------------------------------------------------------------
 
     If no '-' are found in args are parsed as argv[x][0] 

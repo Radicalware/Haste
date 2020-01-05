@@ -1,4 +1,4 @@
-
+﻿
 //#include <vld.h>
 
 #if(MSVC)
@@ -24,9 +24,6 @@
 #include "xvector.h"
 #include "Nexus.h"
 #include "Timer.h"
-
-// Modded Libs
-#include "cc.h"
 
 using std::vector;
 using std::string;

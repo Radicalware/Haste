@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 SET(THIS f)
 
-# -------------------------- CONFIG -----------------------------------------------------
+# -------------------------- PRE-CONFIG -------------------------------------------------
 
 if(WIN32)
     set(RADICAL_PATH "C:/Source/CMake/Modules")
@@ -16,15 +16,9 @@ include("${RADICAL_PATH}/Radical-App-Config.cmake")
 
 project (${THIS})
 
-add_executable(${THIS}
-    ${SRC}/${THIS}.cpp
+SUBDIRLIST(PROJECT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Solution")
 
-    ${INC}/Core.h
-    ${SRC}/Core.cpp
-
-    ${INC}/LibLoc.h
-    ${SRC}/LibLoc.cpp
-)
+add_executable(${THIS} ${PROJECT_FILES})
 
 find_package(Nexus)
 find_package(xvector)
@@ -32,7 +26,6 @@ find_package(xstring)
 find_package(xmap)
 find_package(OS)
 find_package(SYS)
-find_package(cc)
 find_package(Timer)
 
 target_link_libraries( ${THIS} PRIVATE	
@@ -44,12 +37,12 @@ target_link_libraries( ${THIS} PRIVATE
     radical::OS
     radical::SYS
     radical::Timer
-	
-    radical_mod::cc
 )
 
-# -------------------------- INSTALL ------------------------------------------
+# -------------------------- POST-CONFIG ------------------------------------------------
 
 include("${RADICAL_PATH}/Radical-App-Install.cmake")
+CONFIGURE_VISUAL_STUDIO(${PROJECT_FILES})
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# -------------------------- END ----------------------------------------------
+# -------------------------- END --------------------------------------------------------

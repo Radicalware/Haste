@@ -1,6 +1,13 @@
 #pragma once
 
-#include "LibLoc.h"
+#include "OS.h"
+
+#include "xvector.h"
+#include "xstring.h"
+
+#include <iostream>
+using std::cout;
+using std::endl;
 
 struct File
 {
@@ -12,7 +19,6 @@ struct File
         Splits();
         Splits(const xstring& line);
         Splits(const Splits& split);
-        xstring& operator[](size_t val);
     };
 
     File();
@@ -23,15 +29,16 @@ struct File
 
     xstring path;
     xstring data;
-    xvector<File::Splits> lines;
+    xvector<xstring> lines;
 
+    bool piped_data = false;
     bool binary  = false;
     bool matches = false;
     bool binary_search_on = false;
     bool indent = false;
     xstring err;
 
-    void print(const xstring& rex);
+    void print();
     void print_divider() const;
 };
 

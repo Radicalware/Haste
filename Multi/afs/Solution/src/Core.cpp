@@ -1,83 +1,65 @@
 #include "Core.h"
 #pragma warning( disable : 26812 ) // to allow our rxm enum even though it isn't a class enum
 
+Core::Core(const Options& options): m_option(options)
+{
+}
+
 Core::~Core()
 {
     if (m_piped_data != nullptr)
         delete m_piped_data;
 }
 
+
 void Core::piped_scan()
 {
     m_piped_data = new File;
     File& file = *m_piped_data;
 
+    file.piped_data = true;
+
     file.path = "Piped Data";
-    if(m_entire)
+    if(m_option.entire)
         file.indent = true;
 
     xstring line;
-    unsigned long int counter = 0;
+    unsigned long int line_num = 0;
 
     while (getline(std::cin, line))
     {
-        counter++;
-        File::Splits sp;
-        sp.splits = line.inclusive_split(m_rex, m_icase, false);
-        if (sp.splits.size())
+        xvector<xstring> segs = line.inclusive_split(m_option.rex.rex, false);
+        xstring colored_line;
+        if (segs.size())
         {
-            sp.line_num = counter;
-            file.lines << sp;
+            bool match_on = false;
+            if (segs[0].match(m_option.rex.rex))
+                match_on = true;
+
+            for (const xstring& seg : segs)
+            {
+                if (match_on)
+                {
+                    colored_line += Color::Mod::Bold + Color::Red + seg + Color::Mod::Reset;
+                    match_on = false;
+                }
+                else {
+                    colored_line += seg;
+                    match_on = true;
+                }
+            }
+            file.lines << colored_line;
         }
-        else if (m_entire) {
-            sp.line_num = counter;
-            sp.splits << line;
-            file.lines << sp;
+        else if (m_option.entire)
+        {
+            file.lines << line;
         }
     }
 }
 
-void Core::set_dir(const xstring& input, bool use_pwd)
-{
-    if (input.scan(R"(\.\.[/\\])"))
-        m_use_full_path = true;
-    else if (input.match(R"(^[A-Z]\:.*$)") && !use_pwd)
-        m_use_full_path = true;
-
-    m_directory = OS::Full_Path(input);
-}
-
-void Core::set_rex(const xstring& input){
-    m_rex += input.sub(R"((\\\\|/)+)", "[\\\\]+(?=[^\\\\]|$)") + ')';
-}
-
-void Core::set_avoid_regex(const xvector<xstring*>& avoid_lst){
-    m_avoid_lst = avoid_lst;
-}
-
-void Core::set_full_path_on(){
-    m_use_full_path = true;
-}
-
-void Core::set_only_name_on(){
-    m_only_name_files = true;
-}
-
-void Core::set_entire_on(){
-    m_entire = true;
-}
-
-void Core::set_case_sensitive_on(){
-    m_icase = rxm::ECMAScript;
-}
-
-void Core::set_binary_on(){
-    m_binary_search_on = true;
-}
-
 File Core::scan_file(xstring& path, const Core& core, const bool binary_search_on)
 {
-    if (!core.m_use_full_path)
+    if (!core.m_option.use_full_path)
         path = '.' + path(static_cast<double>(OS::PWD().size()), 0);
 
     File file(path, binary_search_on);
@@ -87,13 +69,12 @@ File Core::scan_file(xstring& path, const Core& core, const bool binary_search_o
         return file;
     }
 
+    bool avoid = static_cast<bool>(core.m_option.avoid_lst.size());
+    file.matches = file.data.scan(core.m_option.rex.rex);
+    if (core.m_option.modify)
+        return file;
 
-    bool avoid = static_cast<bool>(core.m_avoid_lst.size());
-    bool matches = false;
-    if(!avoid)
-        matches = file.data.scan(core.m_rex, core.m_icase);
-
-    if ((!avoid) && (!matches))
+    if (!file.matches)
     {
         file.data.clear();
         return file;
@@ -109,30 +90,50 @@ File Core::scan_file(xstring& path, const Core& core, const bool binary_search_o
         }
     }
 
-    if (core.m_only_name_files) {
+    xstring line_num_str;
+    xstring spacer = '.';
+    if (core.m_option.only_name_files)
+    {
         if (!avoid)
-            file.matches = (file.data.scan(core.m_rex, core.m_icase));
+            file.matches = (file.data.scan(core.m_option.rex.rex));
         else
-            file.matches = (file.data.scan(core.m_rex, core.m_icase) && !file.data.scan_list(core.m_avoid_lst));
+            file.matches = (file.data.scan(core.m_option.rex.rex) && !file.data.scan_list(core.m_option.avoid_lst));
     }
     else {
-        unsigned long int counter = 0;
+        unsigned long int line_num = 0;
         for (const xstring& line : file.data.split('\n'))
         {
             if (avoid) {
-                if (line.scan_list(core.m_avoid_lst, core.m_icase))
+                if (line.scan_list(core.m_option.avoid_lst))
                     continue;
             }
 
-            counter++;
-            File::Splits sp;
-            sp.splits = line.inclusive_split(core.m_rex, core.m_icase, false);
-
-            if (sp.splits.size())
+            line_num++;
+            line_num_str = to_xstring(line_num);
+            xvector<xstring> segs = line.inclusive_split(core.m_option.rex.rex, false);
+            xstring colored_line;
+            if (segs.size())
             {
+                colored_line = Color::Mod::Bold + Color::Cyan + "Line " + (spacer * (7 - line_num_str.size())) + ' ' + line_num_str + ": " + Color::Mod::Reset;
                 file.matches = true;
-                sp.line_num = counter;
-                file.lines << sp;
+                bool match_on = false;
+                if (segs[0].match(core.m_option.rex.rex))
+                    match_on = true;
+                
+                segs[0].ltrim();
+                for (xstring& seg : segs)
+                {
+                    if (match_on)
+                    {
+                        colored_line += Color::Mod::Bold + Color::Red + seg + Color::Mod::Reset;
+                        match_on = false;
+                    }
+                    else {
+                        colored_line += seg;
+                        match_on = true;
+                    }
+                }
+                file.lines << colored_line;
             }
         }
     }
@@ -142,35 +143,48 @@ File Core::scan_file(xstring& path, const Core& core, const bool binary_search_o
 
 void Core::multi_core_scan()
 {
+    m_file_lst = OS::Dir(m_option.directory, 'd').xrender<xvector<xstring>>([](xstring& dir) { return OS::Dir(dir, 'r', 'f'); }).expand();
+    m_file_lst += OS::Dir(m_option.directory, 'f');
 
-    m_file_lst = OS::Dir(m_directory, 'd').xrender<xvector<xstring>>([](xstring& dir) { return OS::Dir(dir, 'r', 'f'); }).expand();
-    m_file_lst += OS::Dir(m_directory, 'f');
-    //m_file_lst.join('\n').print();
-    cout << cc::cyan << "Files in Dir: " << m_file_lst.size() << cc::reset << endl;
+    cout << Color::Cyan << "Files in Dir: " << m_file_lst.size() << Color::Mod::Reset << endl;
 
     // xrender is multi-threaded
     // "this" is passed in with std::ref but never modified
-    m_files = m_file_lst.xrender<File>(Core::scan_file, std::ref(*this), m_binary_search_on);
+    m_files = m_file_lst.xrender<File>(Core::scan_file, std::ref(*this), m_option.binary_search_on);
 }
 
 void Core::single_core_scan()
 {
-    m_file_lst = OS::Dir(m_directory, 'r', 'f');
-    cout << cc::cyan << "Files in Dir: " << m_file_lst.size() << cc::reset << endl;
+    m_file_lst = OS::Dir(m_option.directory, 'r', 'f');
+    cout << Color::Cyan << "Files in Dir: " << m_file_lst.size() << Color::Mod::Reset << endl;
 
-    m_files = m_file_lst.render<File>(Core::scan_file, std::ref(*this), m_binary_search_on);
+    m_files = m_file_lst.render<File>(Core::scan_file, std::ref(*this), m_option.binary_search_on);
 }
 
 void Core::print()
 {
     if (m_piped_data != nullptr)
     {
-        m_piped_data->print(m_rex);
-
+        m_piped_data->print();
         return;
     }
 
-    if (m_only_name_files) {   // print what the user was looking for
+    if (m_option.modify)
+    {
+        OS os;
+        for (const File& file : m_files) {
+            if (file.matches) {
+                try {
+                    os.popen("subl " + file.path);
+                }
+                catch (std::runtime_error & err) {
+                    cout << err.what() << endl;
+                }
+            }
+        }
+    }
+
+    if (m_option.only_name_files) {   // print what the user was looking for
         this->print_divider();
         bool match_found = false;
         for (File& file : m_files)
@@ -190,7 +204,7 @@ void Core::print()
         {
             if (file.binary || file.err.size())
                 continue;
-            file.print(m_rex);
+            file.print();
         };
     }
     this->print_divider();
@@ -221,5 +235,5 @@ void Core::print()
 }
 
 void Core::print_divider() const {
-    cout << cc::blue << xstring(OS::Console_Size()[0], '-') << cc::reset;
+    cout << Color::Blue << xstring(OS::Console_Size()[0], '-') << Color::Mod::Reset;
 }
