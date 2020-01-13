@@ -2,6 +2,15 @@
 
                   !!! Haste Release Highlights !!!
 
+
+---------------------------------------------------------------------
+
+01/12/2020 >> Haste v6.6.3
+
+You now can use -a/--avoid to give a list of regex values to avoid
+when using the f.exe and afs.exe search tools.
+f/afs now use RE2 for matching to enhance speed.
+
 ---------------------------------------------------------------------
 
 11/08/2019 >> Haste v6.5.1
