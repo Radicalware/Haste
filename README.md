@@ -5,33 +5,33 @@
 ## MultiPlatform
 
 f = Find File (v6.4.0)  
-    1.  Used to find filenames with multi-threading and C++ based Regex  
-    2.  You can limit the threadcount but default is to use all availible threads  
+    a.  Used to find filenames with multi-threading and C++ based Regex  
+    b.  You can limit the threadcount but default is to use all availible threads  
 
 afs = advanced file search (v6.4.0)  
-    1.  Used to recursively find text files with multi-threading and C++ based Regex  
-    2.  You can limit the threadcount but default is to use all availible threads  
+    a.  Used to recursively find text files with multi-threading and C++ based Regex  
+    b.  You can limit the threadcount but default is to use all availible threads  
 
 ## Windows
 
 l.exe = Windows version of ls (v5.0.0)  
-    1.  Used like Linux based ls  
-    2.  easier to read than dir because it allows you to see file type by color  
-    3.  You can sort via alphabetically (default) or by text size (to view more on a page)  
-    4.  dir format has color coding  
-    5.  Both linux style ls method and windows style dir method will seperate dirs and files  
+    a.  Used like Linux based ls  
+    b.  easier to read than dir because it allows you to see file type by color  
+    c.  You can sort via alphabetically (default) or by text size (to view more on a page)  
+    d.  dir format has color coding  
+    e.  Both linux style ls method and windows style dir method will seperate dirs and files  
 
 ## Nix (Linux/OSX)
 
 stty_shell.cpp  
-    1.  Use this to help automate getting an stty remote shell on your Nix remote target  
-    2.  This tool requires that your target have python installed.  
+    a.  Use this to help automate getting an stty remote shell on your Nix remote target  
+    b.  This tool requires that your target have python installed.  
 
 ## Linux
 
 alsr  
-    1. Allows for easy viewing of your aslr sate  
-    2. You an easily change your aslr state with this as well  
+    a. Allows for easy viewing of your aslr sate  
+    b. You an easily change your aslr state with this as well  
 
 
 

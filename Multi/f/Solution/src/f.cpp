@@ -9,8 +9,12 @@ int help(int val = 0);
 
 int main(int argc, char** argv)
 {
+    Nexus<>::Start();
+    Timer t;
     SYS sys;
-
+    Options option;
+    Core core(option);
+    
 	sys.alias('r', "--regex");
 	sys.alias('d', "--dir");
     sys.alias('t', "--threads");
@@ -20,17 +24,18 @@ int main(int argc, char** argv)
     sys.alias('c', "--case");
     sys.alias('s', "--swap");
     sys.alias('m', "--modify");
+    sys.alias('a', "--avoid");
 
 	sys.set_args(argc, argv);
 
 	if (argc == 1 || sys.help())
 		return help();
 
-    Options option;
-    Core core(option);
-
-    if (sys('f')) option.use_full_path = true;;
-    if (sys('s')) option.swap_split    = true;
+    if (sys('g')) option.return_only(*sys['g'][0]);
+    if (sys('f')) option.use_full_path = true;
+    if (sys('c')) option.rex.case_sensitive = true;
+    if (sys('s')) option.swap_split = true;
+    if (sys('m')) option.modify = true;
 
 	if (!sys.key_used()) {
 		if (argc == 2) {
@@ -42,7 +47,7 @@ int main(int argc, char** argv)
             option.set_dir(argv[2]);
 		}
 		else {
-			help(1);
+			return help(1);
 		}
 	}
 	else{
@@ -55,17 +60,13 @@ int main(int argc, char** argv)
 		if (sys('d')) option.set_dir(*sys['d'][0]);
 		else          option.set_dir(OS::PWD(), true);
 
-        if (sys('c')) option.rex.mods = rxm::ECMAScript;
 	}
 
-    if (sys('g')) option.return_only(*sys['g'][0]);
-    if (sys('m')) option.modify = true;
+    if (sys('a'))  option.set_avoid_regex(sys['a']);
 
     Nexus<void> nxv;
     if (sys('t')) nxv.Set_Thread_Count((*sys['t'][0]).to_int());
     
-    
-    Timer t;
 	if (sys('o')) {
 		core.single_core_scan();
         core.print_files();
@@ -80,7 +81,7 @@ int main(int argc, char** argv)
 	}
     cout << "Time: " << t << Color::Mod::Reset << endl;
 
-    return 0;
+    return Nexus<>::Stop();
 }
 
 
@@ -121,5 +122,5 @@ int help(int val){
         Use the KVPs as described in the table above.
 
 )help";
-    return 0;
+    return Nexus<>::Stop();
 }

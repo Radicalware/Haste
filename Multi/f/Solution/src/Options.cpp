@@ -2,6 +2,12 @@
 #include "Options.h"
 
 
+Options::~Options()
+{
+    for (auto* item : avoid_lst)
+        delete item;
+}
+
 void Options::set_dir(const xstring& input, bool use_pwd)
 {
     if (input.scan(R"(\.\.[/\\])"))
@@ -14,20 +20,30 @@ void Options::set_dir(const xstring& input, bool use_pwd)
 
 void Options::set_rex(const xstring& input)
 {
-    rex.str.clear();
 #if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
-    //m_rex += input.sub(R"((\\\\|/)+)", "[\\\\]+(?=[^\\\\]|$)") + ')';
-    rex.str = rex.str + '(' + input + ')';
+    rex.str = xstring('(') + input + ')';
+    // swap a literal regex backslash for two literal backslashes
 #else
     rex.str = rex.str + '(' + input.sub(R"(\\\\)", "\\") + ')';
 #endif
-    rex.rex = std::regex(rex.str, rex.mods);
+    rex.re2.mods = new re2::RE2::Options;
+    if (rex.case_sensitive)
+    {
+        rex.re2.mods->set_case_sensitive(true);
+        rex.std.mods = (rxm::ECMAScript);
+    }
+    else {
+        rex.re2.mods->set_case_sensitive(false);
+        rex.std.mods = (rxm::icase | rxm::ECMAScript);
+    }
+    rex.re2.rex = new RE2(rex.str, *rex.re2.mods);
+    rex.std.rex = std::regex(rex.str, rex.std.mods);
 }
 
 void Options::set_avoid_regex(const xvector<xstring*>& i_avoid_lst)
 {
     for (const xstring* str : i_avoid_lst)
-        avoid_lst << std::regex(*str, rex.mods);
+        avoid_lst << new re2::RE2(*str, *rex.re2.mods);
 }
 
 void Options::return_only(const xstring& ret_only)
@@ -41,4 +57,10 @@ void Options::return_only(const xstring& ret_only)
         find_mod2 = 'f';
     }
     //else if(ret_type == "files") // default
+}
+
+Options::Rex::~Rex()
+{
+    delete re2.rex;
+    delete re2.mods;
 }

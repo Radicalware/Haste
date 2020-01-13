@@ -74,14 +74,21 @@ int help(int ret_err) {
         Use the KVPs as described in the table above.
 
 )";
-    return ret_err;
+    return Nexus<>::Stop();
 }
+
+
 
 int main(int argc, char** argv) 
 {	
+
+    Nexus<>::Start();
+
     Timer t;
     SYS sys;
     Options option;
+    Core core(option);
+
     sys.alias('r', "--regex"); // -- always required
 
     sys.alias('d', "--dir");   // -- usual bools
@@ -100,7 +107,6 @@ int main(int argc, char** argv)
 
     sys.set_args(argc, argv);
 
-    Core core(option);
     if (sys.help()) 
         return help(0);
 
@@ -114,24 +120,18 @@ int main(int argc, char** argv)
             option.set_rex(*sys['r'][0]);
     };
 
-    auto config_options = [&core, &sys, &option]() -> void 
-    {
-        if (!sys('d')) option.set_dir(OS::PWD(), true);
-        else           option.set_dir(*sys['d'][0]);
+    if (!sys('d')) option.set_dir(OS::PWD(), true);
+    else           option.set_dir(*sys['d'][0]);
 
-        if (sys('t')) NX_Threads::Set_Thread_Count((*sys['t'][0]).to_int());
-        if (sys('a'))  option.set_avoid_regex(sys['a']);
-        if (sys('f')) option.use_full_path = true;
-        if (sys('c')) option.rex.mods = rxm::ECMAScript;
-        if (sys('b')) option.binary_search_on = true;
-        if (sys('n')) option.only_name_files = true;
-        if (sys('m')) option.modify = true;
+    if (sys('t')) NX_Threads::Set_Thread_Count((*sys['t'][0]).to_int());
+    if (sys('f')) option.use_full_path = true;
+    if (sys('c')) option.rex.case_sensitive = true;
+    if (sys('b')) option.binary_search_on = true;
+    if (sys('n')) option.only_name_files = true;
+    if (sys('m')) option.modify = true;
 
-        if (sys('p')) option.piped = true;
-        if (sys('e')) option.entire = true;
-    };
-
-    config_options();
+    if (sys('p')) option.piped = true;
+    if (sys('e')) option.entire = true;
 
     // use piped scan if there is ony one arg and it is not a key
     if ((sys.argc() == 2 && sys[1][0] != '-') || option.piped)
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 
         core.piped_scan();
         core.print();
-        return 0; // << -------- return ----------------------
+        return Nexus<>::Stop(); // << -------- return ----------------------
     }
 
     else if (!sys.key_used()) {
@@ -160,6 +160,7 @@ int main(int argc, char** argv)
     {
         find_rex_arg();
     }
+    if (sys('a'))  option.set_avoid_regex(sys['a']);
 
     core.print_divider();
     if (sys('o')) {
@@ -174,8 +175,8 @@ int main(int argc, char** argv)
     }
     cout << Color::Cyan << "Time: " << t << Color::Mod::Reset << endl;
     core.print_divider();
-	
-	return 0;
+
+	return Nexus<>::Stop();
 }
 
 

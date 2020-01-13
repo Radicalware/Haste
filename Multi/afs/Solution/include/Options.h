@@ -21,14 +21,30 @@ struct Options
 {
     struct Rex
     {
-        std::regex rex;
+        struct g2
+        {
+            RE2* rex = nullptr;
+            re2::RE2::Options* mods = nullptr;
+        };
+        struct stl
+        {
+            std::regex rex;
+            rxm::type mods;
+        };
+
+        g2 re2;
+        stl std;
+
         xstring str;
-#pragma warning (suppress : 26812)
-        rxm::type mods = (rxm::icase | rxm::ECMAScript);
+        bool case_sensitive = false;
+
+        ~Rex();
     };
+    Options() {};
+    ~Options();
 
     Rex rex;
-    xvector<std::regex> avoid_lst;
+    xvector<RE2*> avoid_lst;
     xstring directory;
 
     bool use_full_path = false;

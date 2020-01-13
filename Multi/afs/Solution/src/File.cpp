@@ -30,12 +30,11 @@ File::File(const xstring& i_path, bool ibinary_search_on)
             try {
                 data = OS::Stream_Read(path);
             }
-            catch (std::runtime_error & errstr) {
+            catch (std::runtime_error& errstr) {
                 this->data.clear();
                 this->err = errstr.what();
             }
         }
-
 #else
         try {
             data = OS::Stat_Read(path);
@@ -88,7 +87,7 @@ void File::print()
     {
         this->print_divider();
 #pragma warning (suppress : 6053) // Above I enusre we get null bytes for spacer
-        cout << Color::Mod::Bold << Color::Cyan << ">>> FILE: >>> " << this->path << spacer << Color::Mod::Reset;
+        cout << Color::Mod::Bold << Color::Cyan << ">>> FILE: >>> " << this->path.sub(m_backslash_rex, "\\\\") << spacer << Color::Mod::Reset;
         printed = true;
     }
 

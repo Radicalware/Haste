@@ -20,14 +20,30 @@ struct Options
 {
     struct Rex
     {
-        std::regex rex;
+        struct g2
+        {
+            RE2* rex;
+            re2::RE2::Options* mods;
+        };
+        struct stl
+        {
+            std::regex rex;
+            #pragma warning (suppress : 26812)
+            rxm::type mods = (rxm::icase | rxm::ECMAScript);
+        };
+        g2 re2;
+        stl std;
         xstring str;
-#pragma warning (suppress : 26812)
-        rxm::type mods = (rxm::icase | rxm::ECMAScript);
+
+        bool case_sensitive = false;
+        
+        ~Rex();
     };
 
+    ~Options();
+
     Rex rex;
-    xvector<std::regex> avoid_lst;
+    xvector<re2::RE2*> avoid_lst;
     xstring directory;
 
     bool use_full_path = false;

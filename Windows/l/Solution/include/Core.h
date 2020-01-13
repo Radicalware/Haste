@@ -1,7 +1,37 @@
 
 #pragma once
 
-#include "LibLoc.h"
+#pragma once
+
+#include<Windows.h>
+#include<iostream>
+#include<vector>
+#include<string>
+#include<utility>
+#include<regex>
+#include<functional> 
+#include<algorithm>
+#include<locale>
+#include<initializer_list>
+#include<sstream>
+#include<set>
+
+// Radical Generic Libs
+#include "Nexus.h"
+#include "OS.h"
+
+// Radicalware eXtended STL Libs
+#include "xstring.h"
+#include "xvector.h"
+#include "xmap.h"
+
+// Modded Object
+#include "cc.h"
+
+using std::vector;
+using std::string;
+using std::cout;
+using std::endl;
 
 using uint  = unsigned int;
 using usint = unsigned short int;
@@ -49,8 +79,8 @@ private:
 	Options m_options;
 	// ----------------------------------------
 
-	const char* m_proj_files = R"(\.(sln|pro)$)";
-	const char* m_exe_files  = R"(\.(ps1|rb|com|exe|EXE|bat|cmd|vbs|vbe|js|jse|wsf|wsh|msc|py|pyw|cpl)([\"\s]?)$)";
+	RE2 m_proj_files = R"(\.(sln|pro)$)";
+	RE2 m_exe_files  = R"(\.(ps1|rb|com|exe|EXE|bat|cmd|vbs|vbe|js|jse|wsf|wsh|msc|py|pyw|cpl)([\"\s]?)$)";
 	xstring m_exe_ext;
 
     Nexus<xvector<xstring>> m_nex_vec;

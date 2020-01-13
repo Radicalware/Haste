@@ -12,6 +12,7 @@ class Core
     xvector<xstring> m_file_lst; // list of file names in the m_directory
 
     File* m_piped_data = nullptr;
+    const RE2 m_backslash_rex = R"(\\)";
 
 public:
     Core(const Options& options);

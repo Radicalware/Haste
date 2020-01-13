@@ -7,19 +7,36 @@ Core::Core(const Options& options) : m_option(options)
 {
 }
 
+Core::~Core()
+{
+}
+
 xstring  Core::find_matching_files(xstring& item, Core& core)
 {
-    if (!core.m_option.use_full_path)
-        item = '.' + item.substr(core.m_option.directory.size(), item.size() - core.m_option.directory.size());
+    // note: at this point, there are only single backslashes
+    // the inclusive-split sets them to double backslash to cancel out special characters.
 
+
+    bool matched = false;
+    if (core.m_option.avoid_lst.size())
+        matched = (item.scan(*core.m_option.rex.re2.rex) && !item.scan_list(core.m_option.avoid_lst));
+    else
+        matched = (item.scan(*core.m_option.rex.re2.rex));
+
+    if (!matched)
+        return xstring();
+
+    if (!core.m_option.use_full_path)
+        item = "." + item.substr(core.m_option.directory.size(), item.size() - core.m_option.directory.size());
+    
+    
     if (core.m_option.swap_split)
 #ifdef WIN_BASE
         item = item.sub("\\\\", "/");
 #else
         item = item.sub("/", "\\");
 #endif
-
-    xvector<xstring> found = item.inclusive_split(core.m_option.rex.rex, false);
+    xvector<xstring> found = item.inclusive_split(core.m_option.rex.std.rex, false);
     xstring colored_path;
     if (!found.size())
         return colored_path;
@@ -28,13 +45,14 @@ xstring  Core::find_matching_files(xstring& item, Core& core)
     {
         return item;
     }
-    else if (found.size()) {
+    else if (found.size()) 
+    {
         bool match_on = false;
-        if (found[0].match(core.m_option.rex.rex))
+        if (found[0].match(*core.m_option.rex.re2.rex))
             match_on = true;
 
 
-        for (const xstring& seg : found)
+        for (xstring& seg : found)
         {
             if (match_on)
             {
@@ -92,11 +110,6 @@ void Core::print_files()
             }
         }
     }
-    else {
-        for (const xstring& file : m_file_lst)
-        {
-            if (file.size())
-                file.print();
-        }
-    }
+    else for (const xstring& file : m_file_lst) if (file.size()) file.print();
+    // bad syntax but it looks cool
 }

@@ -7,7 +7,7 @@ Core::Core(const Options& options): m_option(options)
 
 Core::~Core()
 {
-    if (m_piped_data != nullptr)
+    if (m_piped_data)
         delete m_piped_data;
 }
 
@@ -28,12 +28,12 @@ void Core::piped_scan()
 
     while (getline(std::cin, line))
     {
-        xvector<xstring> segs = line.inclusive_split(m_option.rex.rex, false);
+        xvector<xstring> segs = line.inclusive_split(m_option.rex.std.rex, false);
         xstring colored_line;
         if (segs.size())
         {
             bool match_on = false;
-            if (segs[0].match(m_option.rex.rex))
+            if (segs[0].match(*m_option.rex.re2.rex))
                 match_on = true;
 
             for (const xstring& seg : segs)
@@ -70,7 +70,7 @@ File Core::scan_file(xstring& path, const Core& core, const bool binary_search_o
     }
 
     bool avoid = static_cast<bool>(core.m_option.avoid_lst.size());
-    file.matches = file.data.scan(core.m_option.rex.rex);
+    file.matches = file.data.scan(*core.m_option.rex.re2.rex);
     if (core.m_option.modify)
         return file;
 
@@ -95,9 +95,9 @@ File Core::scan_file(xstring& path, const Core& core, const bool binary_search_o
     if (core.m_option.only_name_files)
     {
         if (!avoid)
-            file.matches = (file.data.scan(core.m_option.rex.rex));
+            file.matches = (file.data.scan(*core.m_option.rex.re2.rex));
         else
-            file.matches = (file.data.scan(core.m_option.rex.rex) && !file.data.scan_list(core.m_option.avoid_lst));
+            file.matches = (file.data.scan(*core.m_option.rex.re2.rex) && !file.data.scan_list(core.m_option.avoid_lst));
     }
     else {
         unsigned long int line_num = 0;
@@ -110,14 +110,14 @@ File Core::scan_file(xstring& path, const Core& core, const bool binary_search_o
 
             line_num++;
             line_num_str = to_xstring(line_num);
-            xvector<xstring> segs = line.inclusive_split(core.m_option.rex.rex, false);
+            xvector<xstring> segs = line.inclusive_split(core.m_option.rex.std.rex, false);
             xstring colored_line;
             if (segs.size())
             {
                 colored_line = Color::Mod::Bold + Color::Cyan + "Line " + (spacer * (7 - line_num_str.size())) + ' ' + line_num_str + ": " + Color::Mod::Reset;
                 file.matches = true;
                 bool match_on = false;
-                if (segs[0].match(core.m_option.rex.rex))
+                if (segs[0].match(*core.m_option.rex.re2.rex))
                     match_on = true;
                 
                 segs[0].ltrim();
@@ -137,6 +137,8 @@ File Core::scan_file(xstring& path, const Core& core, const bool binary_search_o
             }
         }
     }
+    if (!file.lines.size())
+        file.matches = false;
     file.data.clear();
     return file;
 }
@@ -172,7 +174,7 @@ void Core::print()
     if (m_option.modify)
     {
         OS os;
-        for (const File& file : m_files) {
+        for (const File& file : m_files) { // open file for modification
             if (file.matches) {
                 try {
                     os.popen("subl " + file.path);
@@ -192,7 +194,7 @@ void Core::print()
             if (file.binary || file.err.size())
                 continue;
             if (file.matches) {
-                file.path.print();
+                file.path.sub(m_backslash_rex, "\\\\").print();
                 match_found = true;
             }
         }
@@ -215,7 +217,7 @@ void Core::print()
             continue;
 
         if (file.binary && file.matches) {
-            cout << "Binary File Matches: " << file.path << '\n';
+            cout << "Binary File Matches: " << file.path.sub(m_backslash_rex, "\\\\") << '\n';
             binary_matched = true;
         }
     }
