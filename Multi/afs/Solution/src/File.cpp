@@ -5,54 +5,54 @@ File::File()
 {
 }
 
-File::File(const File& file)
+File::File(const File& FoFile)
 {
-    this->operator=(file);
+    this->operator=(FoFile);
 }
 
-File::File(const xstring& i_path, bool ibinary_search_on)
+File::File(const xstring& FsPath, bool FbIsBinarySearch)
 {
-    path = i_path;
-    binary_search_on = ibinary_search_on;
-    if (binary_search_on)
+    MsPath = FsPath;
+    MbBinarySearchOn = FbIsBinarySearch;
+    if (MbBinarySearchOn)
     {
 #if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
-        bool open_failure = false;
+        bool LbOpenFailure = false;
         try {
-            data = OS::Fast_Read(path);
+            MsData = OS::ReadFastMethod(MsPath);
         }
         catch (std::runtime_error&) {
-            open_failure = true;
+            LbOpenFailure = true;
         }
 
-        if (open_failure)
+        if (LbOpenFailure)
         {
             try {
-                data = OS::Stream_Read(path);
+                MsData = OS::ReadStreamMethod(MsPath);
             }
             catch (std::runtime_error& errstr) {
-                this->data.clear();
-                this->err = errstr.what();
+                this->MsData.clear();
+                this->MsError = errstr.what();
             }
         }
 #else
         try {
-            data = OS::Stat_Read(path);
+            MsData = OS::ReadStatMethod(MsPath);
         }   
         catch (std::runtime_error & errstr) {
-            this->data.clear();
-            this->err = errstr.what();
+            this->MsData.clear();
+            this->MsError = errstr.what();
         }
 #endif
     }
     else { // not binary searching
         try {
-            data = OS::Fast_Read(path);
+            MsData = OS::ReadFastMethod(MsPath);
         }
         catch (std::runtime_error& errstr) 
         {
-            this->data.clear();
-            this->err = errstr.what();// new xstring(errstr.what());
+            this->MsData.clear();
+            this->MsError = errstr.what();// new xstring(errstr.what());
         }
     }
 }
@@ -63,45 +63,45 @@ File::~File()
     //    delete err;
 }
 
-void File::operator=(const File& file)
+void File::operator=(const File& FoFile)
 {
-    this->path = file.path;
-    this->data = file.data;
-    this->lines = file.lines;
-    this->binary = file.binary;
-    this->matches = file.matches;
-    this->binary_search_on = file.binary_search_on;
+    this->MsPath = FoFile.MsPath;
+    this->MsData = FoFile.MsData;
+    this->MvsLines = FoFile.MvsLines;
+    this->MbBinary = FoFile.MbBinary;
+    this->MbMatches = FoFile.MbMatches;
+    this->MbBinarySearchOn = FoFile.MbBinarySearchOn;
 }
 
 
-void File::print()
+void File::Print()
 {
-    bool printed = false;
+    bool LbPrinted = false;
     char spacer[3];
-    if (!piped_data)
+    if (!MbPipedData)
         strncpy(spacer, "\n\n\0", 3);
     else
         strncpy(spacer, "\0", 3);
 
-    if (this->matches && !this->binary)
+    if (this->MbMatches && !this->MbBinary)
     {
-        this->print_divider();
+        this->PrintDivider();
 #pragma warning (suppress : 6053) // Above I enusre we get null bytes for spacer
-        cout << Color::Mod::Bold << Color::Cyan << ">>> FILE: >>> " << this->path.sub(m_backslash_rex, "\\\\") << spacer << Color::Mod::Reset;
-        printed = true;
+        cout << Color::Mod::Bold << Color::Cyan << ">>> FILE: >>> " << this->MsPath.Sub(MoBackslashRex, "\\\\") << spacer << Color::Mod::Reset;
+        LbPrinted = true;
     }
 
-    bool line_match = false;
-    for (const xstring& line : lines)
+    // bool line_match = false; // Code review : TBR
+    for (const xstring& line : MvsLines)
     {
         if (line.size())
-            line.print();
+            line.Print();
     }
-    if(printed && !piped_data)
+    if(LbPrinted && !MbPipedData)
         cout << '\n';
 }
 
-void File::print_divider() const
+void File::PrintDivider() const
 {
-    cout << Color::Blue << xstring(OS::Console_Size()[0], '-') << Color::Mod::Reset;
+    cout << Color::Blue << xstring(OS::GetConsoleSize()[0], '-') << Color::Mod::Reset;
 }

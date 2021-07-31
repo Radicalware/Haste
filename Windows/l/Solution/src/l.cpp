@@ -3,35 +3,35 @@
 using std::cout;
 using std::endl;
 
-int help();
+int Help();
 
 int main(int argc, char** argv)
 {
 	Nexus<>::Start();
-	Core core(argc, argv);
+	Core LoCore(argc, argv);
 
-	if (!core.exists) {
-		cout << "'" << core.options().dir.red().reset() << "' does not exist!\n";
+	if (!LoCore.MbExists) {
+		cout << "'" << LoCore.GetOptions().MsDir.ToRed().ResetColor() << "' does not exist!\n";
 		return 0;
 	}
 
-	if (core.options().help)
-		return help();
+	if (LoCore.GetOptions().MbHelp)
+		return Help();
 
-	if (core.options().dir_style)
-		core.print_dir_style();
+	if (LoCore.GetOptions().MbDirStyle)
+		LoCore.PrintDirStyle();
 	else
-		core.print_ls_style();
+		LoCore.PrintLsStyle();
 
-	cout << cc::reset;
+	cout << CC::Reset;
 	Nexus<>::Stop();
 	return 0;
 }
 
 
-int help() {
+int Help() {
 
-	cout << R"help(
+	cout << R"Help(
 
 	This tool 'l.exe' execute as 'l'
 	is to replicate the main functionality of ls from Nix (l for short)
@@ -58,7 +58,8 @@ int help() {
 	the text. It also by default hides files that would otherwise
 	be shown with the --all argument.
 
-)help";
+)Help";
 
+	Nexus<>::Stop();
 	return 0;
 }

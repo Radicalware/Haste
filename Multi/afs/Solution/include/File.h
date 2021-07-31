@@ -11,26 +11,25 @@ using std::endl;
 
 struct File
 {
-    const RE2 m_backslash_rex = R"((\\\\))";
+    const RE2 MoBackslashRex = R"((\\\\))";
 
-    xstring path;
-    xstring data;
-    xvector<xstring> lines;
-    xstring err;
+    xstring MsPath = "";
+    xstring MsData = "";
+    xvector<xstring> MvsLines;
+    xstring MsError = "";
 
-    bool piped_data = false;
-    bool binary = false;
-    bool matches = false;
-    bool binary_search_on = false;
-    bool indent = false;
+    bool MbPipedData = false;
+    bool MbBinary = false;
+    bool MbMatches = false;
+    bool MbBinarySearchOn = false;
+    bool MbIndent = false;
 
     File();
     ~File();
-    File(const File& file);
-    File(const xstring& i_path, bool ibinary_search_on);
-    void operator=(const File& file);
+    File(const File& FoFile);
+    File(const xstring& FsPath, bool FbIsBinarySearch);
+    void operator=(const File& FoFile);
 
-    void print();
-    void print_divider() const;
+    void Print();
+    void PrintDivider() const;
 };
-

@@ -27,7 +27,7 @@
 #include "Core.h"
 #include "Options.h"
 
-int help(int ret_err) {
+int Help(int FnReturnError) {
     cout << R"(
 
     afs is used to Find text in Files Recursivly
@@ -44,7 +44,8 @@ int help(int ret_err) {
     ------------------------------------------------------------------
       -d     |  --dir       |  (str)   Directory To Search In
       -t     |  --threads   |  (int)   Set Thread Count
-      -a     |  --avoid     |  (array) avoid these regex per line
+      -v     |  --void      |  (array) Void search these syntax
+      -a     |  --avoid     |  (array) Avoid searching these directories and files
       -f     |  --full      |  (bool)  Show the Full Path
       -c     |  --case      |  (bool)  Case-Sensitive Regex
       -b     |  --binary    |  (bool)  Search Binary Files 
@@ -80,103 +81,104 @@ int help(int ret_err) {
 
 
 int main(int argc, char** argv) 
-{	
+{   
 
     Nexus<>::Start();
 
-    Timer t;
-    SYS sys;
-    Options option;
-    Core core(option);
+    Timer LoTimer;
+    SYS LoSys;
+    Options LoOption;
+    Core core(LoOption);
 
-    sys.alias('r', "--regex"); // -- always required
+    LoSys.AddAlias('r', "--regex"); // -- always required
 
-    sys.alias('d', "--dir");   // -- usual bools
-    sys.alias('t', "--threads");
-    sys.alias('a', "--avoid");
-    sys.alias('f', "--full");
-    sys.alias('c', "--case");
-    sys.alias('b', "--binary");
-    sys.alias('n', "--name");
+    LoSys.AddAlias('d', "--dir");   // -- usual bools
+    LoSys.AddAlias('t', "--threads");
+    LoSys.AddAlias('v', "--void");  // -- while discarding matches with this regex
+    LoSys.AddAlias('a', "--avoid"); // -- avoiding the files and directories
+    LoSys.AddAlias('f', "--full");
+    LoSys.AddAlias('c', "--case");
+    LoSys.AddAlias('b', "--binary");
+    LoSys.AddAlias('n', "--name");
 
-    sys.alias('o', "--one");    // -- setting only one thread path is not the same as -t 1
-    sys.alias('m', "--modify");
+    LoSys.AddAlias('o', "--one");    // -- setting only one thread path is not the same as -t 1
+    LoSys.AddAlias('m', "--modify");
 
-    sys.alias('p', "--pipe");   // -- piped path
-    sys.alias('e', "--entire");
+    LoSys.AddAlias('p', "--pipe");   // -- piped path
+    LoSys.AddAlias('e', "--entire");
 
-    sys.set_args(argc, argv);
+    LoSys.SetArgs(argc, argv);
 
-    if (sys.help()) 
-        return help(0);
+    if (LoSys.Help()) 
+        return Help(0);
 
-    auto find_rex_arg = [&core, &sys, &option]() -> void 
+    auto find_rex_arg = [&core, &LoSys, &LoOption]() -> void 
     { // note: argv[0] is the program path
-        if (sys.argc() == 2 && !sys('r')) // no --regex && 1 prog args == set argv[1] as the regex
-            option.set_rex(sys[1]);
-        else if (sys.argc() > 2 && !sys('r'))  // no --regex && over 1 prog arg == set argv[2] as the regex
-            option.set_rex(sys[2]);
+        if (LoSys.ArgC() == 2 && !LoSys('r')) // no --regex && 1 prog args == set argv[1] as the regex
+            LoOption.SetRegex(LoSys[1]);
+        else if (LoSys.ArgC() > 2 && !LoSys('r'))  // no --regex && over 1 prog arg == set argv[2] as the regex
+            LoOption.SetRegex(LoSys[2]);
         else
-            option.set_rex(*sys['r'][0]);
+            LoOption.SetRegex(*LoSys['r'][0]);
     };
 
-    if (!sys('d')) option.set_dir(OS::PWD(), true);
-    else           option.set_dir(*sys['d'][0]);
+    if (!LoSys('d')) LoOption.SetDirectory(OS::PWD(), true);
+    else           LoOption.SetDirectory(*LoSys['d'][0]);
 
-    if (sys('t')) NX_Threads::Set_Thread_Count((*sys['t'][0]).to_int());
-    if (sys('f')) option.use_full_path = true;
-    if (sys('c')) option.rex.case_sensitive = true;
-    if (sys('b')) option.binary_search_on = true;
-    if (sys('n')) option.only_name_files = true;
-    if (sys('m')) option.modify = true;
+    if (LoSys('t')) NX_Threads::SetThreadCount((*LoSys['t'][0]).ToInt());
+    if (LoSys('f')) LoOption.MbUseFullPath = true;
+    if (LoSys('c')) LoOption.MoRex.MbCaseSensitive = true;
+    if (LoSys('b')) LoOption.MbBinaraySearchOn = true;
+    if (LoSys('n')) LoOption.MbOnlyNameFiles = true;
+    if (LoSys('m')) LoOption.MbModify = true;
 
-    if (sys('p')) option.piped = true;
-    if (sys('e')) option.entire = true;
+    if (LoSys('p')) LoOption.MbPiped = true;
+    if (LoSys('e')) LoOption.MbEntire = true;
 
     // use piped scan if there is ony one arg and it is not a key
-    if ((sys.argc() == 2 && sys[1][0] != '-') || option.piped)
+    if ((LoSys.ArgC() == 2 && LoSys[1][0] != '-') || LoOption.MbPiped)
     {
         find_rex_arg();
 
-        core.piped_scan();
-        core.print();
+        core.PipedScan();
+        core.Print();
         return Nexus<>::Stop(); // << -------- return ----------------------
     }
 
-    else if (!sys.key_used()) {
+    else if (!LoSys.HasArgs()) {
         if (argc == 2) {
-            option.set_rex(argv[1]);
-            option.set_dir(OS::PWD(), true);
+            LoOption.SetRegex(argv[1]);
+            LoOption.SetDirectory(OS::PWD(), true);
         }
         else if (argc == 3) {
-            option.set_dir(argv[1]);
-            option.set_rex(argv[2]);
+            LoOption.SetDirectory(argv[1]);
+            LoOption.SetRegex(argv[2]);
         }
         else {
-            return help(1); // << -------- return -----------
+            return Help(1); // << -------- return -----------
         }
     }
     else 
     {
         find_rex_arg();
     }
-    if (sys('a'))  option.set_avoid_regex(sys['a']);
+    if (LoSys('v'))  LoOption.SetAvoidRegex(LoSys['v']);
+    if (LoSys('a'))  LoOption.SetAvoidDirectories(LoSys['a']);
 
-    core.print_divider();
-    if (sys('o')) {
-        core.single_core_scan();
-        core.print();
+    core.PrintDivider();
+    if (LoSys('o')) {
+        core.SingleCoreScan();
+        core.Print();
         cout << Color::Cyan << "Single-Threaded\n" << Color::Mod::Reset;
     }
     else {
-        core.multi_core_scan();
-        core.print();
-        cout << Color::Cyan << "Threads Availible: " << NX_Threads::Thread_Count_Available() << Color::Mod::Reset << endl;
+        core.MultiCoreScan();
+        core.Print();
+        cout << Color::Cyan << "Threads Availible: " << NX_Threads::GetThreadCountAvailable() << Color::Mod::Reset << endl;
     }
-    cout << Color::Cyan << "Time: " << t << Color::Mod::Reset << endl;
-    core.print_divider();
+    cout << Color::Cyan << "Time: " << LoTimer << Color::Mod::Reset << endl;
+    core.PrintDivider();
 
-	return Nexus<>::Stop();
+    return Nexus<>::Stop();
 }
-
 

@@ -4,63 +4,63 @@
 
 Options::~Options()
 {
-    for (auto* item : avoid_lst)
+    for (auto* item : MvoAvoidList)
         delete item;
 }
 
-void Options::set_dir(const xstring& input, bool use_pwd)
+void Options::SetDirectory(const xstring& FsInput, bool FbUsePassword)
 {
-    if (input.scan(R"(\.\.[/\\])"))
-        use_full_path = true;
-    else if (input.match(R"(^[A-Z]\:.*$)") && !use_pwd)
-        use_full_path = true;
+    if (FsInput.Scan(R"(\.\.[/\\])"))
+        MbUseFullPath = true;
+    else if (FsInput.Match(R"(^[A-Z]\:.*$)") && !FbUsePassword)
+        MbUseFullPath = true;
 
-    directory = OS::Full_Path(input);
+    MsDirectory = OS::FullPath(FsInput);
 }
 
-void Options::set_rex(const xstring& input)
+void Options::SetRegex(const xstring& FsInput)
 {
 #if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
-    rex.str = xstring('(') + input + ')';
+    MoRegularExpression.MsString = xstring('(') + FsInput + ')';
     // swap a literal regex backslash for two literal backslashes
 #else
-    rex.str = rex.str + '(' + input.sub(R"(\\\\)", "\\") + ')';
+    rex.str = rex.str + '(' + input.Sub(R"(\\\\)", "\\") + ')';
 #endif
-    rex.re2.mods = new re2::RE2::Options;
-    if (rex.case_sensitive)
+    MoRegularExpression.MoRegularExpressionG2.MoModsPtr = new re2::RE2::Options;
+    if (MoRegularExpression.MbCaseSensitive)
     {
-        rex.re2.mods->set_case_sensitive(true);
-        rex.std.mods = (rxm::ECMAScript);
+        MoRegularExpression.MoRegularExpressionG2.MoModsPtr->set_case_sensitive(true);
+        MoRegularExpression.MoStd.MoMods = (rxm::ECMAScript);
     }
     else {
-        rex.re2.mods->set_case_sensitive(false);
-        rex.std.mods = (rxm::icase | rxm::ECMAScript);
+        MoRegularExpression.MoRegularExpressionG2.MoModsPtr->set_case_sensitive(false);
+        MoRegularExpression.MoStd.MoMods = (rxm::icase | rxm::ECMAScript);
     }
-    rex.re2.rex = new RE2(rex.str, *rex.re2.mods);
-    rex.std.rex = std::regex(rex.str, rex.std.mods);
+    MoRegularExpression.MoRegularExpressionG2.MoRegularExpressionPtr = new RE2(MoRegularExpression.MsString, *MoRegularExpression.MoRegularExpressionG2.MoModsPtr);
+    MoRegularExpression.MoStd.MoRegularExpression = std::regex(MoRegularExpression.MsString, MoRegularExpression.MoStd.MoMods);
 }
 
-void Options::set_avoid_regex(const xvector<xstring*>& i_avoid_lst)
+void Options::SetAvoidRegex(const xvector<xstring*>& FvsAvoidList)
 {
-    for (const xstring* str : i_avoid_lst)
-        avoid_lst << new re2::RE2(*str, *rex.re2.mods);
+    for (const xstring* str : FvsAvoidList)
+        MvoAvoidList << new re2::RE2(*str, *MoRegularExpression.MoRegularExpressionG2.MoModsPtr);
 }
 
-void Options::return_only(const xstring& ret_only)
+void Options::SetReturnOnly(const xstring& FxReturnOnly)
 {
-    if (ret_only == "d" || ret_only == "dirs") {
-        find_mod1 = 'd';
-        find_mod2 = 'd';
+    if (FxReturnOnly == "d" || FxReturnOnly == "dirs") {
+        McFindMod1 = 'd';
+        McFindMod2 = 'd';
     }
-    else if (ret_only == "b" || ret_only == "both") {
-        find_mod1 = 'd';
-        find_mod2 = 'f';
+    else if (FxReturnOnly == "b" || FxReturnOnly == "both") {
+        McFindMod1 = 'd';
+        McFindMod2 = 'f';
     }
     //else if(ret_type == "files") // default
 }
 
 Options::Rex::~Rex()
 {
-    delete re2.rex;
-    delete re2.mods;
+    delete MoRegularExpressionG2.MoRegularExpressionPtr;
+    delete MoRegularExpressionG2.MoModsPtr;
 }

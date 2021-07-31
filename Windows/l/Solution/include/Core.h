@@ -16,7 +16,7 @@
 #include<sstream>
 #include<set>
 
-// Radical Generic Libs
+// Radicalware Generic Libs
 #include "Nexus.h"
 #include "OS.h"
 
@@ -49,12 +49,13 @@ public:
 	};
 	struct Options
 	{
-		xstring dir;
-		bool dir_style      = false;
-		bool show_all_files = false;
-		bool sort_by_size   = false;
+		xstring MsDir;
+		bool MbDirStyle     = false;
+		bool MbShowAllFiles = false;
+		bool MbSortBySize   = false;
 
-		bool help           = false;
+		bool MbHelp           = false;
+		Options() {}
 	};
 
 private:
@@ -66,61 +67,61 @@ private:
 		// and values. I wanted to do it in one for-loop to enhance speed at the
 		// expense of beutification. 
 
-		xstring* name;
-		DirType type;
-		bool hidden;
+		xstring* MsNamePtr;
+		DirType MoType;
+		bool MbHidden;
 		Files();
-		Files(xstring* i_name, const DirType i_type);
+		Files(xstring* FsNamePtr, const DirType& FoType);
 	};
 	// ----------------------------------------
 	// calculated in the constructor
-	bool m_dir_style = false;
-	bool m_hidden_valies = false;
-	Options m_options;
+	bool MbDirStyle = false;
+	bool MbHiddenValues = false;
+	Options MoOptions;
 	// ----------------------------------------
 
-	RE2 m_proj_files = R"(\.(sln|pro)$)";
-	RE2 m_exe_files  = R"(\.(ps1|rb|com|exe|EXE|bat|cmd|vbs|vbe|js|jse|wsf|wsh|msc|py|pyw|cpl)([\"\s]?)$)";
-	xstring m_exe_ext;
+	RE2 MoProjectFilesRex = R"(\.(sln|pro)$)";
+	RE2 MoExecutableFilesRex  = R"(\.(ps1|rb|com|exe|EXE|bat|cmd|vbs|vbe|js|jse|wsf|wsh|msc|py|pyw|cpl)([\"\s]?)$)";
+	xstring MsExecutableExtension;
 
-    Nexus<xvector<xstring>> m_nex_vec;
+    Nexus<xvector<xstring>> MvsNexusVector;
 
-	xvector<Core::Files> m_directories;
-	xvector<Core::Files> m_files;
+	xvector<Core::Files> MvoDirectories;
+	xvector<Core::Files> MvoFiles;
 
-	xvector<xstring> m_str_files;
-    xvector<xstring> m_str_directories;
-	xstring _example;
+	xvector<xstring> MvsFiles;
+    xvector<xstring> MvsDirectories;
+	xstring MsExample;
 
-	usint m_space_size = 2;
-	int m_console_width = OS::Console_Size()[0];
-	xstring empty_str;
-	bool m_view_all_files = false;
+	usint MnSpaceSize = 2;
+	int MnConsoleWidth = OS::GetConsoleSize()[0];
+	xstring MsEmptyString;
+	bool MbViewAllFiles = false;
 
 public:
-	Core(int argc, char** argv); 
+	Core(int FnArgC, char** FasArgv);
 	~Core(); 
-	bool exists = false;
+	bool MbExists = false;
 private:
-	bool add_dir_items(xstring& item);
-	void trim(xstring& item);
-	void sort_files(xvector<Files>& file_lst);
+	bool AddDirectoryItems(xstring& FsItem);
+	void Trim(xstring& FsItem);
+	void SortFiles(xvector<Files>& FvoFiles);
 
-	bool system_hidden(const xstring& item);
-	bool user_hidden(const xstring& item);
+	bool GetIsSystemHidden(const xstring& FsItem);
+	bool GetIsUserHidden(const xstring& FsItem);
 
-	void continued_print_files(xvector<Files>& dir_lst);
-	void print_ls_style_size(xvector<Files*>& pfiles);
-	void print_ls_style_alph(xvector<Files*>& pfiles);
+	void ContinuedPrintFiles(xvector<Files>& FvoDirectory);
+	void PrintLsStyleSize(xvector<Files*>& FvoFiles);
+	void PrintLsStyleAlpha(xvector<Files*>& FvoFiles);
 
-	void dir_ptr_out(const Files* item) const;
-	void dir_vals_out(const xvector<Files>& dir_lst) const;
+	void PrintFileOrDirectory(const Files* FoItemPtr) const;
+	void PrintFilesOrDirectories(const xvector<Files>& FvoDirectoryList) const;
 
-	void add_word_space(size_t count) const;
+	void AddWordSpace(size_t FnCount) const;
 public:
 
-	void print_ls_style();
-	void print_dir_style();
+	void PrintLsStyle();
+	void PrintDirStyle();
 
-	Core::Options options() const;
+	Core::Options GetOptions() const;
 };

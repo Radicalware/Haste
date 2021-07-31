@@ -23,39 +23,42 @@ struct Options
     {
         struct g2
         {
-            RE2* rex = nullptr;
-            re2::RE2::Options* mods = nullptr;
+            RE2* MoRexPtr = nullptr;
+            re2::RE2::Options* MoModsPtr = nullptr;
         };
         struct stl
         {
-            std::regex rex;
-            rxm::type mods;
+            std::regex MoRex;
+            rxm::type MoMods;
         };
 
-        g2 re2;
-        stl std;
+        g2 MoRe2;
+        stl MoStd;
 
-        xstring str;
-        bool case_sensitive = false;
+        xstring MsStr = "";
+        bool MbCaseSensitive = false;
 
+        Rex() {}
         ~Rex();
     };
     Options() {};
     ~Options();
 
-    Rex rex;
-    xvector<RE2*> avoid_lst;
-    xstring directory;
+    Rex MoRex;
+    xvector<RE2*> MvoAvoidList;
+    xvector<RE2*> MvoAvoidFilesAndDirectoriesList;
+    xstring MsDirectory = "";
 
-    bool use_full_path = false;
-    bool only_name_files = false;
-    bool line_tracker_on = false;
-    bool binary_search_on = false;
-    bool entire = false;
-    bool piped = false;
-    bool modify = false;
+    bool MbUseFullPath = false;
+    bool MbOnlyNameFiles = false;
+    bool MbLineTrackerOn = false;
+    bool MbBinaraySearchOn = false;
+    bool MbEntire = false;
+    bool MbPiped = false;
+    bool MbModify = false;
 
-    void set_dir(const xstring& input, bool use_pwd = false);
-    void set_rex(const xstring& input);
-    void set_avoid_regex(const xvector<xstring*>& i_avoid_lst);
+    void SetDirectory(const xstring& FsInput, bool FbUsePassword = false);
+    void SetRegex(const xstring& FsInput);
+    void SetAvoidRegex(const xvector<xstring*>& FvsAvoidList);
+    void SetAvoidDirectories(const xvector<xstring*>& FvsAvoidList);
 };

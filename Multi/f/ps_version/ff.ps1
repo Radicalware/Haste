@@ -20,7 +20,7 @@ $lsFolders = [System.Collections.ArrayList]@()
 
 $loc = (pwd | Select-String -Pattern "^C.*" | Out-String) -replace ("(`n)|(`r`n)","")
 
-$file_content = @((Get-ChildItem -path $loc -Recurse | Out-String).split("`n"))
+$file_content = @((Get-ChildItem -path $loc -Recurse | Out-String).Split("`n"))
 
 foreach ($item in $file_content){
     if ($item | Select-String '    Directory:'){
@@ -40,11 +40,11 @@ $Targets = [System.Collections.ArrayList]@()
 foreach ($location in $folder_array){
    
     $location = $location -replace (".$")
-    $files = @((Get-ChildItem -Path $location| Out-String).split("`n"))
+    $files = @((Get-ChildItem -Path $location| Out-String).Split("`n"))
     $file_path = [System.Collections.ArrayList]@()
     foreach($file in $files){
         if ($file -match '-a'){
-            $file = (($file -replace '[^:].[0-9]\s{1}','***').split('***')[6]) 
+            $file = (($file -replace '[^:].[0-9]\s{1}','***').Split('***')[6]) 
             $file_path.Add("$location\$file")|Out-Null
         }        
     }

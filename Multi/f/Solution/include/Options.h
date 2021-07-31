@@ -22,39 +22,39 @@ struct Options
     {
         struct g2
         {
-            RE2* rex;
-            re2::RE2::Options* mods;
+            RE2* MoRegularExpressionPtr;
+            re2::RE2::Options* MoModsPtr;
         };
         struct stl
         {
-            std::regex rex;
+            std::regex MoRegularExpression;
             #pragma warning (suppress : 26812)
-            rxm::type mods = (rxm::icase | rxm::ECMAScript);
+            rxm::type MoMods = (rxm::icase | rxm::ECMAScript);
         };
-        g2 re2;
-        stl std;
-        xstring str;
+        g2 MoRegularExpressionG2;
+        stl MoStd;
+        xstring MsString;
 
-        bool case_sensitive = false;
+        bool MbCaseSensitive = false;
         
         ~Rex();
     };
 
     ~Options();
 
-    Rex rex;
-    xvector<re2::RE2*> avoid_lst;
-    xstring directory;
+    Rex MoRegularExpression;
+    xvector<re2::RE2*> MvoAvoidList;
+    xstring MsDirectory;
 
-    bool use_full_path = false;
-    bool swap_split = false;
-    bool modify = false;
+    bool MbUseFullPath = false;
+    bool MbSwapSplit = false;
+    bool MbModify = false;
 
-    char find_mod1 = 'f';
-    char find_mod2 = 'f';
+    char McFindMod1 = 'f';
+    char McFindMod2 = 'f';
 
-    void set_dir(const xstring& input, bool use_pwd = false);
-    void set_rex(const xstring& input);
-    void set_avoid_regex(const xvector<xstring*>& i_avoid_lst);
-    void return_only(const xstring& ret_only);
+    void SetDirectory(const xstring& FsInput, bool FbUsePassword = false);
+    void SetRegex(const xstring& FsInput);
+    void SetAvoidRegex(const xvector<xstring*>& FvsAvoidList);
+    void SetReturnOnly(const xstring& FxReturnOnly);
 };

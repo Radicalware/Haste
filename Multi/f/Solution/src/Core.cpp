@@ -3,7 +3,7 @@
 #pragma warning( disable : 26812 ) // for allowing the STL (non-class enum)
 
 
-Core::Core(const Options& options) : m_option(options)
+Core::Core(const Options& FoOptions) : MoOptions(FoOptions)
 {
 }
 
@@ -11,98 +11,98 @@ Core::~Core()
 {
 }
 
-xstring  Core::find_matching_files(xstring& item, Core& core)
+xstring  Core::FindMatchingFiles(xstring& FsItem, Core& FoCore)
 {
     // note: at this point, there are only single backslashes
     // the inclusive-split sets them to double backslash to cancel out special characters.
 
 
-    bool matched = false;
-    if (core.m_option.avoid_lst.size())
-        matched = (item.scan(*core.m_option.rex.re2.rex) && !item.scan_list(core.m_option.avoid_lst));
+    bool LbMatched = false;
+    if (FoCore.MoOptions.MvoAvoidList.size())
+        LbMatched = (FsItem.Scan(*FoCore.MoOptions.MoRegularExpression.MoRegularExpressionG2.MoRegularExpressionPtr) && !FsItem.ScanList(FoCore.MoOptions.MvoAvoidList));
     else
-        matched = (item.scan(*core.m_option.rex.re2.rex));
+        LbMatched = (FsItem.Scan(*FoCore.MoOptions.MoRegularExpression.MoRegularExpressionG2.MoRegularExpressionPtr));
 
-    if (!matched)
+    if (!LbMatched)
         return xstring();
 
-    if (!core.m_option.use_full_path)
-        item = "." + item.substr(core.m_option.directory.size(), item.size() - core.m_option.directory.size());
+    if (!FoCore.MoOptions.MbUseFullPath)
+        FsItem = "." + FsItem.substr(FoCore.MoOptions.MsDirectory.size(), FsItem.size() - FoCore.MoOptions.MsDirectory.size());
     
     
-    if (core.m_option.swap_split)
+    if (FoCore.MoOptions.MbSwapSplit)
 #ifdef WIN_BASE
-        item = item.sub("\\\\", "/");
+        FsItem = FsItem.Sub("\\\\", "/");
 #else
-        item = item.sub("/", "\\");
+        FsItem = FsItem.Sub("/", "\\");
 #endif
-    xvector<xstring> found = item.inclusive_split(core.m_option.rex.std.rex, false);
-    xstring colored_path;
-    if (!found.size())
-        return colored_path;
+    xvector<xstring> LvsFound = FsItem.InclusiveSplit(FoCore.MoOptions.MoRegularExpression.MoStd.MoRegularExpression, false);
+    xstring LsColoredPath;
+    if (!LvsFound.size())
+        return LsColoredPath;
 
-    if (core.m_option.modify)
+    if (FoCore.MoOptions.MbModify)
     {
-        return item;
+        return FsItem;
     }
-    else if (found.size()) 
+    else if (LvsFound.size()) 
     {
-        bool match_on = false;
-        if (found[0].match(*core.m_option.rex.re2.rex))
-            match_on = true;
+        bool LbMatchOn = false;
+        if (LvsFound[0].Match(*FoCore.MoOptions.MoRegularExpression.MoRegularExpressionG2.MoRegularExpressionPtr))
+            LbMatchOn = true;
 
 
-        for (xstring& seg : found)
+        for (xstring& seg : LvsFound)
         {
-            if (match_on)
+            if (LbMatchOn)
             {
-                colored_path += Color::Mod::Bold + Color::Red + seg + Color::Mod::Reset;
-                match_on = false;
+                LsColoredPath += Color::Mod::Bold + Color::Red + seg + Color::Mod::Reset;
+                LbMatchOn = false;
             }
             else {
-                colored_path += seg;
-                match_on = true;
+                LsColoredPath += seg;
+                LbMatchOn = true;
             }
         }
     }
-    return colored_path;
+    return LsColoredPath;
 }
 
-void Core::multi_core_scan()
+void Core::MultiCoreScan()
 {
-    xvector<xstring> dirs_to_scan;
-    dirs_to_scan = OS::Dir(m_option.directory, 'd').
-        xrender<xvector<xstring>>([this](xstring& dir) { return OS::Dir(dir, 'r', m_option.find_mod1, m_option.find_mod2); }).
-        expand();
+    xvector<xstring> LvsDirectoriesToScan;
+    LvsDirectoriesToScan = OS::Dir(MoOptions.MsDirectory, 'd').
+        ForEachThread<xvector<xstring>>([this](xstring& dir) { return OS::Dir(dir, 'r', MoOptions.McFindMod1, MoOptions.McFindMod2); }).
+        Expand();
 
-    if(m_option.find_mod1 == 'f' || m_option.find_mod2 == 'f')
-        dirs_to_scan += OS::Dir(m_option.directory, 'f');
-    cout << Color::Cyan << "Files in Dir: " << dirs_to_scan.size() << Color::Mod::Reset << endl;
+    if(MoOptions.McFindMod1 == 'f' || MoOptions.McFindMod2 == 'f')
+        LvsDirectoriesToScan += OS::Dir(MoOptions.MsDirectory, 'f');
+    cout << Color::Cyan << "Files in Dir: " << LvsDirectoriesToScan.size() << Color::Mod::Reset << endl;
 
     // xrender is multi-threaded
-    m_file_lst = dirs_to_scan.xrender(Core::find_matching_files, std::ref(*this));
+    MvsFileList = LvsDirectoriesToScan.ForEachThread(Core::FindMatchingFiles, std::ref(*this));
 }
 
-void Core::single_core_scan()
+void Core::SingleCoreScan()
 {
-    xvector<xstring> dirs_to_scan = OS::Dir(m_option.directory, 'r', m_option.find_mod1, m_option.find_mod2);
-    cout << Color::Cyan << "Files in Dir: " << dirs_to_scan.size() << ' ' << Color::Mod::Reset << endl;
+    xvector<xstring> LvsDirectoriesToScan = OS::Dir(MoOptions.MsDirectory, 'r', MoOptions.McFindMod1, MoOptions.McFindMod2);
+    cout << Color::Cyan << "Files in Dir: " << LvsDirectoriesToScan.size() << ' ' << Color::Mod::Reset << endl;
 
     // render is single-threaded
-    m_file_lst = dirs_to_scan.render(Core::find_matching_files, std::ref(*this));
+    MvsFileList = LvsDirectoriesToScan.ForEach(Core::FindMatchingFiles, std::ref(*this));
 }
 
-void Core::print_files()
+void Core::PrintFiles()
 {
-    // m_file_list.join('\n').print(); // does not check for size()
+    // m_file_list.Join('\n').Print(); // does not check for size()
 
-    if (m_option.modify) {
-        for (const xstring& file : m_file_lst)
+    if (MoOptions.MbModify) {
+        for (const xstring& file : MvsFileList)
         {
             OS os;
             if (file.size()) {
                 try {
-                    os.popen("subl " + file);
+                    os.RunConsoleCommand("subl " + file);
                 }
                 catch (std::runtime_error & err) {
                     cout << err.what() << endl;
@@ -110,6 +110,6 @@ void Core::print_files()
             }
         }
     }
-    else for (const xstring& file : m_file_lst) if (file.size()) file.print();
+    else for (const xstring& file : MvsFileList) if (file.size()) file.Print();
     // bad syntax but it looks cool
 }

@@ -4,54 +4,65 @@
 
 Options::Rex::~Rex()
 {
-    if(re2.rex) delete re2.rex;
-    if(re2.mods) delete re2.mods;
+    if(MoRe2.MoRexPtr) delete MoRe2.MoRexPtr;
+    if(MoRe2.MoModsPtr) delete MoRe2.MoModsPtr;
 }
 
 Options::~Options()
 {
-    if(avoid_lst.size())
-        for (RE2* val : avoid_lst)
+    if(MvoAvoidList.size())
+        for (RE2* val : MvoAvoidList)
             delete val;
+    if(!MvoAvoidFilesAndDirectoriesList.empty())
+        for (RE2* val : MvoAvoidFilesAndDirectoriesList)
+            delete val;
+    // Make sure we don't delete the elements twice
+    MvoAvoidList.clear();
+    MvoAvoidFilesAndDirectoriesList.clear();
 }
 
-void Options::set_dir(const xstring& input, bool use_pwd)
+void Options::SetDirectory(const xstring& FsInput, bool FbUsePassword)
 {
-    if (input.scan(R"(\.\.[/\\])"))
-        use_full_path = true;
-    else if (input.match(R"(^[A-Z]\:.*$)") && !use_pwd)
-        use_full_path = true;
+    if (FsInput.Scan(R"(\.\.[/\\])"))
+        MbUseFullPath = true;
+    else if (FsInput.Match(R"(^[A-Z]\:.*$)") && !FbUsePassword)
+        MbUseFullPath = true;
 
-    directory = OS::Full_Path(input);
+    MsDirectory = OS::FullPath(FsInput);
 }
 
-void Options::set_rex(const xstring& input) 
+void Options::SetRegex(const xstring& FsInput) 
 {
 #if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
-    rex.str = xstring('(') + input + ')';
+    MoRex.MsStr = xstring('(') + FsInput + ')';
     // swap a literal regex backslash for two literal backslashes
 #else
-    rex.str = rex.str + '(' + input.sub(R"(\\\\)", "\\") + ')';
+    MoRex.MsStr = MoRex.MsStr + '(' + FsInput.Sub(R"(\\\\)", "\\") + ')';
 #endif
-    if (rex.re2.mods) delete rex.re2.mods;
-    rex.re2.mods = new re2::RE2::Options;
-    if (rex.case_sensitive)
+    if (MoRex.MoRe2.MoModsPtr) delete MoRex.MoRe2.MoModsPtr;
+    MoRex.MoRe2.MoModsPtr = new re2::RE2::Options;
+    if (MoRex.MbCaseSensitive)
     {
-        rex.re2.mods->set_case_sensitive(true);
-        rex.std.mods = (rxm::ECMAScript);
+        MoRex.MoRe2.MoModsPtr->set_case_sensitive(true);
+        MoRex.MoStd.MoMods = (rxm::ECMAScript);
     }
     else {
-        rex.re2.mods->set_case_sensitive(false);
-        rex.std.mods = (rxm::icase | rxm::ECMAScript);
+        MoRex.MoRe2.MoModsPtr->set_case_sensitive(false);
+        MoRex.MoStd.MoMods = (rxm::icase | rxm::ECMAScript);
     }
-    if (rex.re2.rex) delete rex.re2.rex;
-    rex.re2.rex = new RE2(rex.str, *rex.re2.mods);
-    rex.std.rex = std::regex(rex.str, rex.std.mods);
+    if (MoRex.MoRe2.MoRexPtr) delete MoRex.MoRe2.MoRexPtr;
+    MoRex.MoRe2.MoRexPtr = new RE2(MoRex.MsStr, *MoRex.MoRe2.MoModsPtr);
+    MoRex.MoStd.MoRex = std::regex(MoRex.MsStr, MoRex.MoStd.MoMods);
 }
 
-void Options::set_avoid_regex(const xvector<xstring*>& i_avoid_lst) 
+void Options::SetAvoidRegex(const xvector<xstring*>& FvsAvoidList) 
 {
-    for (const xstring* str : i_avoid_lst)
-        avoid_lst << new RE2(*str);
+    for (const xstring* str : FvsAvoidList)
+        MvoAvoidList << new RE2(*str);
 }
 
+void Options::SetAvoidDirectories(const xvector<xstring*>& FvsAvoidList)
+{
+    for (const xstring* str : FvsAvoidList)
+        MvoAvoidFilesAndDirectoriesList << new RE2(*str);
+}

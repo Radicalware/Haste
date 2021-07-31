@@ -6,25 +6,25 @@
 
 class Core
 {
-    const Options& m_option; // based on user input
+    const Options& MoOption; // based on user input
 
-    xvector<File> m_files; // list of file data (split lines)
-    xvector<xstring> m_file_lst; // list of file names in the m_directory
+    xvector<File> MvoFiles; // list of file data (split lines)
+    xvector<xstring> MvsFileList; // list of file names in the m_directory
 
-    File* m_piped_data = nullptr;
-    const RE2 m_backslash_rex = R"(\\)";
+    File* MoPipedDataPtr = nullptr;
+    const RE2 MoBackslashRex = R"(\\)";
 
 public:
-    Core(const Options& options);
+    Core(const Options& FoOptions);
     ~Core();
 
-    void piped_scan();
-    static File scan_file(xstring& path, const Core& core, const bool search_binary);
+    void PipedScan();
+    static File ScanFile(xstring& FsPath, const Core& FoCore, const bool FbSearchBinary);
 
-    void multi_core_scan();
-    void single_core_scan();
+    void MultiCoreScan();
+    void SingleCoreScan();
 
-    void print();
-    void print_divider() const;
+    void Print();
+    void PrintDivider() const;
 };
 

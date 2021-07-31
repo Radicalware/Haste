@@ -6,22 +6,22 @@
 
 class Core
 {
-    const Options& m_option; // based on user input
+    const Options& MoOptions; // based on user input
 
-    xvector<xstring> m_file_lst;
-	xvector<std::thread> m_threads;
-    xvector<xstring> m_found_files;
-    RE2 m_backslash_rex = R"((\\\\))";
+    xvector<xstring> MvsFileList;
+	xvector<std::thread> MvoThreads;
+    xvector<xstring> MvsFoundFiles;
+    RE2 MoBackslashRex = R"((\\\\))";
 
 public:
-    Core(const Options& options);
+    Core(const Options& FoOptions);
     ~Core();
 
-    static xstring find_matching_files(xstring& item, Core& core);
+    static xstring FindMatchingFiles(xstring& FsItem, Core& FoCore);
 
-    void multi_core_scan();
-    void single_core_scan();
+    void MultiCoreScan();
+    void SingleCoreScan();
 
-    void print_files();
+    void PrintFiles();
 };
 
