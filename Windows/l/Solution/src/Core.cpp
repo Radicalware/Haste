@@ -287,7 +287,7 @@ void Core::PrintLsStyle()
 
 	if (OS::HasFile(MoOptions.MsDir)) {
 		cout << OS::FullPath(MoOptions.MsDir) << endl;
-		exit(0);
+		return;
 	}
 
     MvsNexusVector.AddJob(OS::Dir(MoOptions.MsDir, 'f'));

@@ -61,6 +61,8 @@ void Options::SetReturnOnly(const xstring& FxReturnOnly)
 
 Options::Rex::~Rex()
 {
-    delete MoRegularExpressionG2.MoRegularExpressionPtr;
-    delete MoRegularExpressionG2.MoModsPtr;
+    if(MoRegularExpressionG2.MoRegularExpressionPtr)
+        delete MoRegularExpressionG2.MoRegularExpressionPtr;
+    if(MoRegularExpressionG2.MoModsPtr)
+        delete MoRegularExpressionG2.MoModsPtr;
 }

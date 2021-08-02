@@ -22,8 +22,8 @@ struct Options
     {
         struct g2
         {
-            RE2* MoRegularExpressionPtr;
-            re2::RE2::Options* MoModsPtr;
+            RE2* MoRegularExpressionPtr = nullptr;
+            re2::RE2::Options* MoModsPtr = nullptr;
         };
         struct stl
         {
