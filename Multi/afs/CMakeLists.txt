@@ -37,12 +37,11 @@ target_include_directories(${THIS} PRIVATE
 if(${debug} OR ${build_all})
     target_link_libraries( ${THIS}
 
+        Radical_Mod::re2    
         Radical::Nexus
         Radical::xvector
         Radical::xstring
-        Radical::xmap
-        
-        Radical_Mod::re2        
+        Radical::xmap    
     )
 endif()
 
