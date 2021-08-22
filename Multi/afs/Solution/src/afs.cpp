@@ -45,7 +45,7 @@ int Help(int FnReturnError) {
       -d     |  --dir       |  (str)   Directory To Search In
       -t     |  --threads   |  (int)   Set Thread Count
       -v     |  --void      |  (array) Void search these syntax
-      -a     |  --avoid     |  (array) Avoid searching these directories and files
+      -a     |  --avoid     |  (array) Avoid searching these paths
       -f     |  --full      |  (bool)  Show the Full Path
       -c     |  --case      |  (bool)  Case-Sensitive Regex
       -b     |  --binary    |  (bool)  Search Binary Files 

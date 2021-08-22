@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 
 	if (!LoCore.MbExists) {
 		cout << "'" << LoCore.GetOptions().MsDir.ToRed().ResetColor() << "' does not exist!\n";
-		return 0;
+		return Nexus<>::Stop();
 	}
 
 	if (LoCore.GetOptions().MbHelp)
@@ -24,8 +24,7 @@ int main(int argc, char** argv)
 		LoCore.PrintLsStyle();
 
 	cout << CC::Reset;
-	Nexus<>::Stop();
-	return 0;
+	return Nexus<>::Stop();
 }
 
 

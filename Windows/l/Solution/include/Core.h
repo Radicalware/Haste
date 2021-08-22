@@ -16,16 +16,12 @@
 #include<sstream>
 #include<set>
 
-// Radicalware Generic Libs
+// Radicalware Libs
 #include "Nexus.h"
 #include "OS.h"
-
-// Radicalware eXtended STL Libs
 #include "xstring.h"
 #include "xvector.h"
 #include "xmap.h"
-
-// Modded Object
 #include "cc.h"
 
 using std::vector;
@@ -33,9 +29,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-using uint  = unsigned int;
 using usint = unsigned short int;
-
 
 class Core
 {
