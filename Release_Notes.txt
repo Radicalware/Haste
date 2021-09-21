@@ -5,6 +5,13 @@
 
 ---------------------------------------------------------------------
 
+09/20/2021 >> Haste v6.7.0
+
+afs.exe was renamed to Scan.exe and f.exe was renamed to Find.exe
+Also, builds were updated to reflect the new build system
+
+---------------------------------------------------------------------
+
 01/12/2020 >> Haste v6.6.3
 
 You now can use -a/--avoid to give a list of regex values to avoid

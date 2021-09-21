@@ -1,5 +1,7 @@
 #include "Core.h"
 
+#define  NOMINMAX
+
 using std::cout;
 using std::endl;
 

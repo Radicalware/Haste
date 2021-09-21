@@ -1,7 +1,10 @@
-#pragma once
+﻿
+//#include <vld.h>
 
-#define  NOMINMAX
+#if(MSVC)
 #include<Windows.h>
+#endif
+
 #include<iostream>
 #include<vector>
 #include<string>
@@ -14,17 +17,13 @@
 #include<sstream>
 #include<set>
 
-// Radical Generic Libs
-#include "Nexus.h"
+// Radicalware Libs
 #include "OS.h"
-
-// Radicalware Modded Libs
-#include "cc.h"
-
-// Radicalware eXtended STL Libs
+#include "SYS.h"
 #include "xstring.h"
 #include "xvector.h"
-#include "xmap.h"
+#include "Nexus.h"
+#include "Timer.h"
 
 using std::vector;
 using std::string;

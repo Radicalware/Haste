@@ -4,17 +4,17 @@
 
 ## MultiPlatform
 
-f = Find File (v6.4.0)  
+Find = Find Files with Regex
     a.  Used to find filenames with multi-threading and C++ based Regex  
     b.  You can limit the threadcount but default is to use all availible threads  
 
-afs = advanced file search (v6.4.0)  
+Scan = Scan Files for Regex
     a.  Used to recursively find text files with multi-threading and C++ based Regex  
     b.  You can limit the threadcount but default is to use all availible threads  
 
 ## Windows
 
-l.exe = Windows version of ls (v5.0.0)  
+l.exe = Windows version of ls
     a.  Used like Linux based ls  
     b.  easier to read than dir because it allows you to see file type by color  
     c.  You can sort via alphabetically (default) or by text size (to view more on a page)  
