@@ -40,10 +40,10 @@ void Options::SetRegex(const xstring& FsInput)
     MoRegularExpression.MoStd.MoRegularExpression = std::regex(MoRegularExpression.MsString, MoRegularExpression.MoStd.MoMods);
 }
 
-void Options::SetAvoidRegex(const xvector<xstring*>& FvsAvoidList)
+void Options::SetAvoidRegex(const xvector<xstring>& FvsAvoidList)
 {
-    for (const xstring* str : FvsAvoidList)
-        MvoAvoidList << new re2::RE2(*str, *MoRegularExpression.MoRegularExpressionG2.MoModsPtr);
+    for (const xstring& str : FvsAvoidList)
+        MvoAvoidList << new re2::RE2(str, *MoRegularExpression.MoRegularExpressionG2.MoModsPtr);
 }
 
 void Options::SetReturnOnly(const xstring& FxReturnOnly)

@@ -55,6 +55,6 @@ struct Options
 
     void SetDirectory(const xstring& FsInput, bool FbUsePassword = false);
     void SetRegex(const xstring& FsInput);
-    void SetAvoidRegex(const xvector<xstring*>& FvsAvoidList);
+    void SetAvoidRegex(const xvector<xstring>& FvsAvoidList);
     void SetReturnOnly(const xstring& FxReturnOnly);
 };

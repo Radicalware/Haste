@@ -4,11 +4,11 @@
 
 ## MultiPlatform
 
-Find = Find Files with Regex
+Search.exe = Find Files with Regex
     a.  Used to find filenames with multi-threading and C++ based Regex  
     b.  You can limit the threadcount but default is to use all availible threads  
 
-Scan = Scan Files for Regex
+Scan.exe = Scan Files for Regex
     a.  Used to recursively find text files with multi-threading and C++ based Regex  
     b.  You can limit the threadcount but default is to use all availible threads  
 

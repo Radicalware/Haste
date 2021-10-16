@@ -55,14 +55,14 @@ void Options::SetRegex(const xstring& FsInput)
     MoRex.MoStd.MoRex = std::regex(MoRex.MsStr, MoRex.MoStd.MoMods);
 }
 
-void Options::SetAvoidRegex(const xvector<xstring*>& FvsAvoidList) 
+void Options::SetAvoidRegex(const xvector<xstring>& FvsAvoidList) 
 {
-    for (const xstring* str : FvsAvoidList)
-        MvoAvoidList << new RE2(*str);
+    for (const xstring& str : FvsAvoidList)
+        MvoAvoidList << new RE2(str);
 }
 
-void Options::SetAvoidDirectories(const xvector<xstring*>& FvsAvoidList)
+void Options::SetAvoidDirectories(const xvector<xstring>& FvsAvoidList)
 {
-    for (const xstring* str : FvsAvoidList)
-        MvoAvoidFilesAndDirectoriesList << new RE2(*str);
+    for (const xstring& str : FvsAvoidList)
+        MvoAvoidFilesAndDirectoriesList << new RE2(str);
 }

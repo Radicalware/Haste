@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 	if (argc == 1 || LoSys.Help())
 		return Help();
 
-    if (LoSys('g')) LoOption.SetReturnOnly(*LoSys['g'][0]);
+    if (LoSys ('g')) LoOption.SetReturnOnly(LoSys['g'][0]);
     if (LoSys('f')) LoOption.MbUseFullPath = true;
     if (LoSys('c')) LoOption.MoRegularExpression.MbCaseSensitive = true;
     if (LoSys('s')) LoOption.MbSwapSplit = true;
@@ -75,17 +75,17 @@ int main(int argc, char** argv)
             return Help(1);
 
         else if (!LoSys('r')) LoOption.SetRegex(LoSys[1]); // set argv[1] as the regex
-        else      LoOption.SetRegex(*LoSys['r'][0]);
+        else      LoOption.SetRegex(LoSys['r'][0]);
 		
-		if (LoSys('d')) LoOption.SetDirectory(*LoSys['d'][0]);
-		else          LoOption.SetDirectory(OS::PWD(), true);
+		if (LoSys('d')) LoOption.SetDirectory(LoSys['d'][0]);
+		else            LoOption.SetDirectory(OS::PWD(), true);
 
 	}
 
     if (LoSys('a'))  LoOption.SetAvoidRegex(LoSys['a']);
 
     Nexus<void> nxv;
-    if (LoSys('t')) nxv.SetThreadCount((*LoSys['t'][0]).ToInt());
+    if (LoSys('t')) nxv.SetThreadCount((LoSys['t'][0]).ToInt());
     
 	if (LoSys('o')) {
 		LoCore.SingleCoreScan();
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
         LoCore.MultiCoreScan();
         LoCore.PrintFiles();
         cout << Color::Cyan;
-        cout << "Threads Availible: " << NX_Threads::GetThreadCountAvailable() << endl;
+        cout << "Threads Availible: " << RA::Threads::GetThreadCountAvailable() << endl;
 	}
     cout << "Time: " << LoTimer << Color::Mod::Reset << endl;
 
@@ -108,8 +108,7 @@ int main(int argc, char** argv)
 int Help(int FnValue){
 
 	cout << R"Help(
-    f is used to Find Files
-    f used as f.exe
+    Search is used to Search for Files
 
     -----------> SET COLORS ON FOR WINDOWS <--------------------------
     Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1

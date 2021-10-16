@@ -30,8 +30,7 @@
 int Help(int FnReturnError) {
     cout << R"(
 
-    afs is used to Find text in Files Recursivly
-    afs used as afs.exe
+    Scan is used to scan for text in files Recursivly
 
     ------------------------------------------------------------------
       Key    |   Key (long) |  Value
@@ -82,7 +81,7 @@ int Help(int FnReturnError) {
 
 int main(int argc, char** argv) 
 {   
-
+    Begin();
     Nexus<>::Start();
 
     Timer LoTimer;
@@ -112,20 +111,20 @@ int main(int argc, char** argv)
     if (LoSys.Help()) 
         return Help(0);
 
-    auto find_rex_arg = [&core, &LoSys, &LoOption]() -> void 
+    auto FindRexArg = [&core, &LoSys, &LoOption]() -> void 
     { // note: argv[0] is the program path
         if (LoSys.ArgC() == 2 && !LoSys('r')) // no --regex && 1 prog args == set argv[1] as the regex
             LoOption.SetRegex(LoSys[1]);
         else if (LoSys.ArgC() > 2 && !LoSys('r'))  // no --regex && over 1 prog arg == set argv[2] as the regex
             LoOption.SetRegex(LoSys[2]);
         else
-            LoOption.SetRegex(*LoSys['r'][0]);
+            LoOption.SetRegex(LoSys['r'][0]);
     };
 
     if (!LoSys('d')) LoOption.SetDirectory(OS::PWD(), true);
-    else           LoOption.SetDirectory(*LoSys['d'][0]);
+    else             LoOption.SetDirectory(LoSys['d'][0]);
 
-    if (LoSys('t')) NX_Threads::SetThreadCount((*LoSys['t'][0]).ToInt());
+    if (LoSys('t')) RA::Threads::SetThreadCount((LoSys['t'][0]).ToInt());
     if (LoSys('f')) LoOption.MbUseFullPath = true;
     if (LoSys('c')) LoOption.MoRex.MbCaseSensitive = true;
     if (LoSys('b')) LoOption.MbBinaraySearchOn = true;
@@ -136,10 +135,9 @@ int main(int argc, char** argv)
     if (LoSys('e')) LoOption.MbEntire = true;
 
     // use piped scan if there is ony one arg and it is not a key
-    if ((LoSys.ArgC() == 2 && LoSys[1][0] != '-') || LoOption.MbPiped)
+    if ((LoSys.ArgC() == 2 && LoSys [1][0] != '-') || LoOption.MbPiped)
     {
-        find_rex_arg();
-
+        FindRexArg();
         core.PipedScan();
         core.Print();
         return Nexus<>::Stop(); // << -------- return ----------------------
@@ -160,7 +158,7 @@ int main(int argc, char** argv)
     }
     else 
     {
-        find_rex_arg();
+        FindRexArg();
     }
     if (LoSys('v'))  LoOption.SetAvoidRegex(LoSys['v']);
     if (LoSys('a'))  LoOption.SetAvoidDirectories(LoSys['a']);
@@ -174,11 +172,12 @@ int main(int argc, char** argv)
     else {
         core.MultiCoreScan();
         core.Print();
-        cout << Color::Cyan << "Threads Availible: " << NX_Threads::GetThreadCountAvailable() << Color::Mod::Reset << endl;
+        cout << Color::Cyan << "Threads Availible: " << RA::Threads::GetThreadCountAvailable() << Color::Mod::Reset << endl;
     }
     cout << Color::Cyan << "Time: " << LoTimer << Color::Mod::Reset << endl;
     core.PrintDivider();
 
+    RescuePrint();
     return Nexus<>::Stop();
 }
 
