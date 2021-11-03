@@ -9,14 +9,16 @@ include("${RADICAL_PATH}/Radical-App-Build.cmake")
 
 set(THIS ${ArgProjectName})
 project(${THIS})
+set(EXES ${THIS})
 
 set(PrivateLibs "")
 find_package(re2 CONFIG REQUIRED)
+list(APPEND PrivateLibs "Memory")
 list(APPEND PrivateLibs "Nexus")
 list(APPEND PrivateLibs "xvector")
 list(APPEND PrivateLibs "xstring")
-list(APPEND PrivateLibs "xmap")
 list(APPEND PrivateLibs "Macros")
+list(APPEND PrivateLibs "xmap")
 
 set(PublicLibs "")
 list(APPEND PublicLibs "Timer")

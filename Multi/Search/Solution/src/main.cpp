@@ -85,7 +85,7 @@ int main(int argc, char** argv)
     if (LoSys('a'))  LoOption.SetAvoidRegex(LoSys['a']);
 
     Nexus<void> nxv;
-    if (LoSys('t')) nxv.SetThreadCount((LoSys['t'][0]).ToInt());
+    if (LoSys('t')) nxv.SetAllowedThreadCount((LoSys['t'][0]).ToInt());
     
 	if (LoSys('o')) {
 		LoCore.SingleCoreScan();

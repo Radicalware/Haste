@@ -16,10 +16,9 @@
 #include<set>
 
 // Radicalware Libs
+#include "Macros.h"
 #include "Nexus.h"
 #include "OS.h"
-#include "xstring.h"
-#include "xvector.h"
 #include "xmap.h"
 #include "cc.h"
 

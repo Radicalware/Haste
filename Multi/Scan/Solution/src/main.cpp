@@ -124,7 +124,7 @@ int main(int argc, char** argv)
     if (!LoSys('d')) LoOption.SetDirectory(OS::PWD(), true);
     else             LoOption.SetDirectory(LoSys['d'][0]);
 
-    if (LoSys('t')) RA::Threads::SetThreadCount((LoSys['t'][0]).ToInt());
+    if (LoSys('t')) RA::Threads::SetAllowedThreadCount((LoSys['t'][0]).ToInt());
     if (LoSys('f')) LoOption.MbUseFullPath = true;
     if (LoSys('c')) LoOption.MoRex.MbCaseSensitive = true;
     if (LoSys('b')) LoOption.MbBinaraySearchOn = true;

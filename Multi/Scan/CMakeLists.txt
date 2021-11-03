@@ -9,9 +9,11 @@ include("${RADICAL_PATH}/Radical-App-Build.cmake")
 
 set(THIS ${ArgProjectName})
 project(${THIS})
+set(EXES ${THIS})
 
 set(PrivateLibs "")
 find_package(re2 CONFIG REQUIRED)
+list(APPEND PrivateLibs "Memory")
 list(APPEND PrivateLibs "Nexus")
 list(APPEND PrivateLibs "xvector")
 list(APPEND PrivateLibs "xstring")
@@ -26,5 +28,3 @@ list(APPEND PublicLibs "CC")
 
 BuildRadicalSolution(PrivateLibs PublicLibs)
 link_libraries(${THIS} re2::re2)
-set(EXES ${THIS})
-include("${RADICAL_PATH}/Radical-App-Install.cmake")

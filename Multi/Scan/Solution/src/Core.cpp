@@ -1,4 +1,7 @@
 #include "Core.h"
+#include "OS.h"
+#include "xstring.h"
+
 #pragma warning( disable : 26812 ) // to allow our rxm enum even though it isn't a class enum
 
 Core::Core(const Options& options) : MoOption(options)
@@ -29,6 +32,11 @@ void Core::PipedScan()
 
     while (getline(std::cin, LsLine))
     {
+        if (MoOption.MbEntire && LsLine.size() == 0)
+        {
+            LoFile.MvsLines << '\0';
+            continue;
+        }
         xvector<xstring> LvsSegments = LsLine.InclusiveSplit(MoOption.MoRex.MoStd.MoRex, false);
         xstring LsColoredLine = "";
         if (LvsSegments.size())
@@ -58,67 +66,75 @@ void Core::PipedScan()
     }
 }
 
-File Core::ScanFile(xstring& FsPath, const Core& FoCore, const bool FbSearchBinary)
+void Core::ScanFile(xstring& FsPath)
 {
-    if (!FoCore.MoOption.MbUseFullPath)
+
+    auto AddFile = [this](const File& FoFile)
+    {
+        auto Lock = MvoFiles.GetMutex().CreateLock();
+        MvoFiles << FoFile;
+    };
+
+    GET(Rex, MoOption.MoRex.MoRe2.MoRexPtr);
+    if (!MoOption.MbUseFullPath)
         FsPath = '.' + FsPath(static_cast<double>(OS::PWD().size()), 0);
 
-    File LoFile(FsPath, FbSearchBinary);
+    File LoFile(FsPath, MoOption.MbBinaraySearchOn);
     if (LoFile.MsError.size())
     {
         LoFile.MsData.clear();
-        return LoFile;
+        return AddFile(LoFile);
     }
 
-    bool LbAvoid = static_cast<bool>(FoCore.MoOption.MvoAvoidList.size());
-    LoFile.MbMatches = LoFile.MsData.Scan(*FoCore.MoOption.MoRex.MoRe2.MoRexPtr);
-    if (FoCore.MoOption.MbModify)
-        return LoFile;
+    bool LbAvoid = static_cast<bool>(MoOption.MvoAvoidList.size());
+    LoFile.MbMatches = LoFile.MsData.Scan(Rex);
+    if (MoOption.MbModify)
+        return AddFile(LoFile);
 
     if (!LoFile.MbMatches)
     {
         LoFile.MsData.clear();
-        return LoFile;
+        return AddFile(LoFile);
     }
 
-    if (FbSearchBinary)
+    if (MoOption.MbBinaraySearchOn)
     {
         LoFile.MbBinary = LoFile.MsData.HasDualNulls();
         if (LoFile.MbBinary)
         {
             LoFile.MsData.clear();
-            return LoFile;
+            return AddFile(LoFile);
         }
     }
 
     xstring LsLineNumberString = "";
     xstring LsSpacer = '.';
-    if (FoCore.MoOption.MbOnlyNameFiles)
+    if (MoOption.MbOnlyNameFiles)
     {
         if (!LbAvoid)
-            LoFile.MbMatches = (LoFile.MsData.Scan(*FoCore.MoOption.MoRex.MoRe2.MoRexPtr));
+            LoFile.MbMatches = (LoFile.MsData.Scan(Rex));
         else
-            LoFile.MbMatches = (LoFile.MsData.Scan(*FoCore.MoOption.MoRex.MoRe2.MoRexPtr) && !LoFile.MsData.ScanList(FoCore.MoOption.MvoAvoidList));
+            LoFile.MbMatches = (LoFile.MsData.Scan(Rex) && !LoFile.MsData.ScanList(MoOption.MvoAvoidList));
     }
     else {
         unsigned long int LnLineNumber = 0;
         for (const xstring& line : LoFile.MsData.Split('\n'))
         {
             if (LbAvoid) {
-                if (line.ScanList(FoCore.MoOption.MvoAvoidList))
+                if (line.ScanList(MoOption.MvoAvoidList))
                     continue;
             }
 
             LnLineNumber++;
-            LsLineNumberString = ToXString(LnLineNumber);
-            xvector<xstring> segs = line.InclusiveSplit(FoCore.MoOption.MoRex.MoStd.MoRex, false);
+            LsLineNumberString = RA::ToXString(LnLineNumber);
+            xvector<xstring> segs = line.InclusiveSplit(MoOption.MoRex.MoStd.MoRex, false);
             xstring colored_line = "";
             if (segs.size())
             {
                 colored_line = Color::Mod::Bold + Color::Cyan + "Line " + (LsSpacer * (7 - LsLineNumberString.size())) + ' ' + LsLineNumberString + ": " + Color::Mod::Reset;
                 LoFile.MbMatches = true;
                 bool LbMatchOn = false;
-                if (segs[0].Match(*FoCore.MoOption.MoRex.MoRe2.MoRexPtr))
+                if (segs[0].Match(Rex))
                     LbMatchOn = true;
 
                 segs[0].LeftTrim();
@@ -138,10 +154,10 @@ File Core::ScanFile(xstring& FsPath, const Core& FoCore, const bool FbSearchBina
             }
         }
     }
-    if (!LoFile.MvsLines.size() && !FoCore.MoOption.MbOnlyNameFiles) // Code review: MvsLines is not alwasys avialable 
+    if (!LoFile.MvsLines.size() && !MoOption.MbOnlyNameFiles) // Code review: MvsLines is not alwasys avialable 
         LoFile.MbMatches = false;
     LoFile.MsData.clear();
-    return LoFile;
+    AddFile(LoFile);
 }
 
 void Core::MultiCoreScan()
@@ -166,7 +182,10 @@ void Core::MultiCoreScan()
 
     // xrender is multi-threaded
     // "this" is passed in with std::ref but never modified
-    MvoFiles = MvsFileList.ForEachThread<File>(Core::ScanFile, std::ref(*this), MoOption.MbBinaraySearchOn);
+    MvoFiles.clear();
+    for (auto& File : MvsFileList)
+        Nexus<>::AddJob(This, &Core::ScanFile, File);
+    Nexus<>::WaitAll();
 }
 
 void Core::SingleCoreScan()
@@ -187,7 +206,10 @@ void Core::SingleCoreScan()
         cout << Color::Cyan << "Files in Dir: " << MvsFileList.size() << Color::Mod::Reset << endl;
     }
 
-    MvoFiles = MvsFileList.ForEach<File>(Core::ScanFile, std::ref(*this), MoOption.MbBinaraySearchOn);
+    MvoFiles.clear();
+    for (auto& File : MvsFileList)
+        Nexus<>::AddJob(This, &Core::ScanFile, File);
+    Nexus<>::WaitAll();
 }
 
 void Core::Print()

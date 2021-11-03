@@ -80,7 +80,7 @@ void Core::MultiCoreScan()
     cout << Color::Cyan << "Files in Dir: " << LvsDirectoriesToScan.size() << Color::Mod::Reset << endl;
 
     // xrender is multi-threaded
-    MvsFileList = LvsDirectoriesToScan.ForEachThread(Core::FindMatchingFiles, std::ref(*this));
+    MvsFileList = LvsDirectoriesToScan.ForEachThread(&Core::FindMatchingFiles, std::ref(*this));
 }
 
 void Core::SingleCoreScan()
@@ -89,7 +89,7 @@ void Core::SingleCoreScan()
     cout << Color::Cyan << "Files in Dir: " << LvsDirectoriesToScan.size() << ' ' << Color::Mod::Reset << endl;
 
     // render is single-threaded
-    MvsFileList = LvsDirectoriesToScan.ForEach(Core::FindMatchingFiles, std::ref(*this));
+    MvsFileList = LvsDirectoriesToScan.ForEach(&Core::FindMatchingFiles, std::ref(*this));
 }
 
 void Core::PrintFiles()

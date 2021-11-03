@@ -19,7 +19,7 @@ public:
     ~Core();
 
     void PipedScan();
-    static File ScanFile(xstring& FsPath, const Core& FoCore, const bool FbSearchBinary);
+    void ScanFile(xstring& FsPath);
 
     void MultiCoreScan();
     void SingleCoreScan();

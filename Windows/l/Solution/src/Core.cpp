@@ -149,7 +149,7 @@ void Core::PrintLsStyleSize(xvector<Files*>& FvoFiles)
 	while (true) {
 
 		// keep splitting into new columns until everything fits into the console
-		uint LnLongPoint = 0;
+		pint LnLongPoint = 0;
 		for (double idx = 0; idx < LnRowCount; idx++)
 		{
 			// get a list of files where we have the longest filename
@@ -203,7 +203,7 @@ void Core::PrintLsStyleAlpha(xvector<Files*>& FvoFiles)
 	while (true) {
 
 		// keep splitting into new columns until everything fits into the console
-		uint LnLongPoint = 0;
+		pint LnLongPoint = 0;
 		LvnLongestColumnValues.clear();
 		LvvoFileStacks.clear();
 		LvnLongestColumnValues.resize(FvoFiles.size() / static_cast<size_t>(LnRowCount) + 1, 0);
@@ -220,7 +220,7 @@ void Core::PrintLsStyleAlpha(xvector<Files*>& FvoFiles)
 			}
 		}
 
-		if (LvnLongestColumnValues.Sum() + (2 * LvnLongestColumnValues.size() - 2) < MnConsoleWidth)
+		if (LvnLongestColumnValues.GetSum() + (2 * LvnLongestColumnValues.size() - 2) < MnConsoleWidth)
 			break;
 		LnRowCount++;
 	}
@@ -288,8 +288,12 @@ void Core::PrintLsStyle()
 		return;
 	}
 
-    MvsNexusVector.AddJob(OS::Dir(MoOptions.MsDir, 'f'));
-    MvsNexusVector.AddJob(OS::Dir(MoOptions.MsDir, 'd'));
+	//MvsNexusVector.AddJob(OS::Dir(MoOptions.MsDir, 'f'));
+	//MvsNexusVector.AddJob(OS::Dir(MoOptions.MsDir, 'd'));
+	MvsNexusVector.AddJob((xvector<xstring>(*)(xstring, char))&OS::Dir, MoOptions.MsDir, 'f');
+	MvsNexusVector.AddJob((xvector<xstring>(*)(xstring, char))&OS::Dir, MoOptions.MsDir, 'd');
+	MvsNexusVector.WaitAll();
+	MvsNexusVector.WaitAll();
     MvsFiles = std::move(MvsNexusVector(0).GetValue());
     MvsDirectories = std::move(MvsNexusVector(1).GetValue());
     MvsNexusVector.Clear();
