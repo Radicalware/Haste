@@ -12,6 +12,8 @@ Scan.exe = Scan Files for Regex
     a.  Used to recursively find text files with multi-threading and C++ based Regex  
     b.  You can limit the threadcount but default is to use all availible threads  
 
+Cipher.exe = Encrypt/Decrypt AES Pass-Codes
+
 ## Windows
 
 l.exe = Windows version of ls

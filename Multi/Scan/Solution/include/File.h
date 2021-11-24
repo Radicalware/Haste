@@ -11,7 +11,7 @@ using std::endl;
 
 struct File
 {
-    const RE2 MoBackslashRex = R"((\\\\))";
+    inline static const RE2 SoBackslashRex = R"((\\\\))";
 
     xstring MsPath = "";
     xstring MsData = "";
@@ -25,10 +25,11 @@ struct File
     bool MbIndent = false;
 
     File();
-    ~File();
     File(const File& FoFile);
+    File(File&& FoFile);
     File(const xstring& FsPath, bool FbIsBinarySearch);
     void operator=(const File& FoFile);
+    void operator=(File&& FoFile);
 
     void Print();
     void PrintDivider() const;

@@ -1,13 +1,29 @@
 #include "File.h"
 
 
+#define ReadFileCatch \
+    catch (std::runtime_error& errstr) { \
+        This.MsData.clear(); \
+        This.MsError = errstr.what(); \
+    } \
+    catch (...) \
+    { \
+        This.MsData.clear(); \
+        This.MsError = "Could Not Open/Read File"; \
+    }
+
 File::File()
 {
 }
 
 File::File(const File& FoFile)
 {
-    this->operator=(FoFile);
+    This = FoFile;
+}
+
+File::File(File&& FoFile)
+{
+    This = std::move(FoFile);
 }
 
 File::File(const xstring& FsPath, bool FbIsBinarySearch)
@@ -19,58 +35,50 @@ File::File(const xstring& FsPath, bool FbIsBinarySearch)
 #if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
         bool LbOpenFailure = false;
         try {
-            MsData = OS::ReadFastMethod(MsPath);
+            MsData = RA::OS::ReadFastMethod(MsPath);
         }
-        catch (std::runtime_error&) {
-            LbOpenFailure = true;
-        }
+        ReadFileCatch
 
         if (LbOpenFailure)
         {
             try {
-                MsData = OS::ReadStreamMethod(MsPath);
+                MsData = RA::OS::ReadStreamMethod(MsPath);
             }
-            catch (std::runtime_error& errstr) {
-                this->MsData.clear();
-                this->MsError = errstr.what();
-            }
+            ReadFileCatch
         }
 #else
         try {
-            MsData = OS::ReadStatMethod(MsPath);
+            MsData = RA::OS::ReadStatMethod(MsPath);
         }   
-        catch (std::runtime_error & errstr) {
-            this->MsData.clear();
-            this->MsError = errstr.what();
-        }
+        ReadFileCatch
 #endif
     }
     else { // not binary searching
         try {
-            MsData = OS::ReadFastMethod(MsPath);
+            MsData = RA::OS::ReadFastMethod(MsPath);
         }
-        catch (std::runtime_error& errstr) 
-        {
-            this->MsData.clear();
-            this->MsError = errstr.what();// new xstring(errstr.what());
-        }
+        ReadFileCatch
     }
-}
-
-File::~File()
-{
-    //if (err != nullptr) 
-    //    delete err;
 }
 
 void File::operator=(const File& FoFile)
 {
-    this->MsPath = FoFile.MsPath;
-    this->MsData = FoFile.MsData;
-    this->MvsLines = FoFile.MvsLines;
-    this->MbBinary = FoFile.MbBinary;
-    this->MbMatches = FoFile.MbMatches;
-    this->MbBinarySearchOn = FoFile.MbBinarySearchOn;
+    This.MsPath             = FoFile.MsPath;
+    This.MsData             = FoFile.MsData;
+    This.MvsLines           = FoFile.MvsLines;
+    This.MbBinary           = FoFile.MbBinary;
+    This.MbMatches          = FoFile.MbMatches;
+    This.MbBinarySearchOn   = FoFile.MbBinarySearchOn;
+}
+
+void File::operator=(File&& FoFile)
+{
+    This.MsPath             = std::move(FoFile.MsPath);
+    This.MsData             = std::move(FoFile.MsData);
+    This.MvsLines           = std::move(FoFile.MvsLines);
+    This.MbBinary           = FoFile.MbBinary;
+    This.MbMatches          = FoFile.MbMatches;
+    This.MbBinarySearchOn   = FoFile.MbBinarySearchOn;
 }
 
 
@@ -83,11 +91,11 @@ void File::Print()
     else
         strncpy(spacer, "\0", 3);
 
-    if (this->MbMatches && !this->MbBinary)
+    if (This.MbMatches && !This.MbBinary)
     {
-        this->PrintDivider();
+        This.PrintDivider();
 #pragma warning (suppress : 6053) // Above I enusre we get null bytes for spacer
-        cout << Color::Mod::Bold << Color::Cyan << ">>> FILE: >>> " << this->MsPath.Sub(MoBackslashRex, "\\\\") << spacer << Color::Mod::Reset;
+        cout << Color::Mod::Bold << Color::Cyan << ">>> FILE: >>> " << This.MsPath.Sub(SoBackslashRex, "\\\\") << spacer << Color::Mod::Reset;
         LbPrinted = true;
     }
 
@@ -103,5 +111,5 @@ void File::Print()
 
 void File::PrintDivider() const
 {
-    cout << Color::Blue << xstring(OS::GetConsoleSize()[0], '-') << Color::Mod::Reset;
+    cout << Color::Blue << xstring(RA::OS::GetConsoleSize()[0], '-') << Color::Mod::Reset;
 }

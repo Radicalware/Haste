@@ -33,8 +33,6 @@ int Help(int FnReturnError) {
     Scan is used to scan for text in files Recursivly
 
     ------------------------------------------------------------------
-      Key    |   Key (long) |  Value
-    ------------------------------------------------------------------
       REQUIRED
     ------------------------------------------------------------------
       -r     |  --regex     |  (str)   Regex To Search For
@@ -84,8 +82,8 @@ int main(int argc, char** argv)
     Begin();
     Nexus<>::Start();
 
-    Timer LoTimer;
-    SYS LoSys;
+    RA::Timer LoTimer;
+    RA::SYS LoSys;
     Options LoOption;
     Core core(LoOption);
 
@@ -121,7 +119,7 @@ int main(int argc, char** argv)
             LoOption.SetRegex(LoSys['r'][0]);
     };
 
-    if (!LoSys('d')) LoOption.SetDirectory(OS::PWD(), true);
+    if (!LoSys('d')) LoOption.SetDirectory(RA::OS::PWD(), true);
     else             LoOption.SetDirectory(LoSys['d'][0]);
 
     if (LoSys('t')) RA::Threads::SetAllowedThreadCount((LoSys['t'][0]).ToInt());
@@ -146,7 +144,7 @@ int main(int argc, char** argv)
     else if (!LoSys.HasArgs()) {
         if (argc == 2) {
             LoOption.SetRegex(argv[1]);
-            LoOption.SetDirectory(OS::PWD(), true);
+            LoOption.SetDirectory(RA::OS::PWD(), true);
         }
         else if (argc == 3) {
             LoOption.SetDirectory(argv[1]);

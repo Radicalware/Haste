@@ -30,37 +30,37 @@ int Help(int FnValue = 0);
 int main(int argc, char** argv)
 {
     Nexus<>::Start();
-    Timer LoTimer;
-    SYS LoSys;
+    RA::Timer LoTimer;
+    RA::SYS Args;
     Options LoOption;
     Core LoCore(LoOption);
     
-	LoSys.AddAlias('r', "--regex");
-	LoSys.AddAlias('d', "--dir");
-    LoSys.AddAlias('t', "--threads");
-    LoSys.AddAlias('g', "--get");
-	LoSys.AddAlias('f', "--full");
-    LoSys.AddAlias('o', "--one");
-    LoSys.AddAlias('c', "--case");
-    LoSys.AddAlias('s', "--swap");
-    LoSys.AddAlias('m', "--modify");
-    LoSys.AddAlias('a', "--avoid");
+	Args.AddAlias('r', "--regex");
+	Args.AddAlias('d', "--dir");
+    Args.AddAlias('t', "--threads");
+    Args.AddAlias('g', "--get");
+	Args.AddAlias('f', "--full");
+    Args.AddAlias('o', "--one");
+    Args.AddAlias('c', "--case");
+    Args.AddAlias('s', "--swap");
+    Args.AddAlias('m', "--modify");
+    Args.AddAlias('a', "--avoid");
 
-	LoSys.SetArgs(argc, argv);
+	Args.SetArgs(argc, argv);
 
-	if (argc == 1 || LoSys.Help())
+	if (argc == 1 || Args.Help())
 		return Help();
 
-    if (LoSys ('g')) LoOption.SetReturnOnly(LoSys['g'][0]);
-    if (LoSys('f')) LoOption.MbUseFullPath = true;
-    if (LoSys('c')) LoOption.MoRegularExpression.MbCaseSensitive = true;
-    if (LoSys('s')) LoOption.MbSwapSplit = true;
-    if (LoSys('m')) LoOption.MbModify = true;
+    if (Args('g')) LoOption.SetReturnOnly(Args['g'][0]);
+    if (Args('f')) LoOption.MbUseFullPath = true;
+    if (Args('c')) LoOption.MoRegularExpression.MbCaseSensitive = true;
+    if (Args('s')) LoOption.MbSwapSplit = true;
+    if (Args('m')) LoOption.MbModify = true;
 
-	if (!LoSys.HasArgs()) {
+	if (!Args.HasArgs()) {
 		if (argc == 2) {
             LoOption.SetRegex(argv[1]);
-            LoOption.SetDirectory(OS::PWD(), true);
+            LoOption.SetDirectory(RA::OS::PWD(), true);
 		}
 		else if (argc == 3) {
             LoOption.SetRegex(argv[1]);
@@ -71,23 +71,23 @@ int main(int argc, char** argv)
 		}
 	}
 	else{
-        if (LoSys[1][0] == '-' && !LoSys('r'))
+        if (Args[1][0] == '-' && !Args('r'))
             return Help(1);
 
-        else if (!LoSys('r')) LoOption.SetRegex(LoSys[1]); // set argv[1] as the regex
-        else      LoOption.SetRegex(LoSys['r'][0]);
+        else if (!Args('r')) LoOption.SetRegex(Args[1]); // set argv[1] as the regex
+        else      LoOption.SetRegex(Args['r'][0]);
 		
-		if (LoSys('d')) LoOption.SetDirectory(LoSys['d'][0]);
-		else            LoOption.SetDirectory(OS::PWD(), true);
+		if (Args('d')) LoOption.SetDirectory(Args['d'][0]);
+		else            LoOption.SetDirectory(RA::OS::PWD(), true);
 
 	}
 
-    if (LoSys('a'))  LoOption.SetAvoidRegex(LoSys['a']);
+    if (Args('a'))  LoOption.SetAvoidRegex(Args['a']);
 
     Nexus<void> nxv;
-    if (LoSys('t')) nxv.SetAllowedThreadCount((LoSys['t'][0]).ToInt());
+    if (Args('t')) nxv.SetAllowedThreadCount((Args['t'][0]).ToInt());
     
-	if (LoSys('o')) {
+	if (Args('o')) {
 		LoCore.SingleCoreScan();
         LoCore.PrintFiles();
         cout << Color::Cyan;
@@ -113,8 +113,6 @@ int Help(int FnValue){
     -----------> SET COLORS ON FOR WINDOWS <--------------------------
     Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1
 
-    -------------------------------------------------------------------------------
-      Key    |   Key (long) |  Value
     -------------------------------------------------------------------------------
       -r     |  --regex     |  <string> Regex to search for
       -d     |  --dir       |  <string> Directory to search in

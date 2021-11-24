@@ -86,7 +86,7 @@ private:
 	xstring MsExample;
 
 	usint MnSpaceSize = 2;
-	int MnConsoleWidth = OS::GetConsoleSize()[0];
+	int MnConsoleWidth = RA::OS::GetConsoleSize()[0];
 	xstring MsEmptyString;
 	bool MbViewAllFiles = false;
 

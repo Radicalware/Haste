@@ -15,7 +15,7 @@ void Options::SetDirectory(const xstring& FsInput, bool FbUsePassword)
     else if (FsInput.Match(R"(^[A-Z]\:.*$)") && !FbUsePassword)
         MbUseFullPath = true;
 
-    MsDirectory = OS::FullPath(FsInput);
+    MsDirectory = RA::OS::FullPath(FsInput);
 }
 
 void Options::SetRegex(const xstring& FsInput)

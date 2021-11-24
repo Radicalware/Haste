@@ -71,12 +71,12 @@ xstring  Core::FindMatchingFiles(xstring& FsItem, Core& FoCore)
 void Core::MultiCoreScan()
 {
     xvector<xstring> LvsDirectoriesToScan;
-    LvsDirectoriesToScan = OS::Dir(MoOptions.MsDirectory, 'd').
-        ForEachThread<xvector<xstring>>([this](xstring& dir) { return OS::Dir(dir, 'r', MoOptions.McFindMod1, MoOptions.McFindMod2); }).
+    LvsDirectoriesToScan = RA::OS::Dir(MoOptions.MsDirectory, 'd').
+        ForEachThread<xvector<xstring>>([this](xstring& dir) { return RA::OS::Dir(dir, 'r', MoOptions.McFindMod1, MoOptions.McFindMod2); }).
         Expand();
 
     if(MoOptions.McFindMod1 == 'f' || MoOptions.McFindMod2 == 'f')
-        LvsDirectoriesToScan += OS::Dir(MoOptions.MsDirectory, 'f');
+        LvsDirectoriesToScan += RA::OS::Dir(MoOptions.MsDirectory, 'f');
     cout << Color::Cyan << "Files in Dir: " << LvsDirectoriesToScan.size() << Color::Mod::Reset << endl;
 
     // xrender is multi-threaded
@@ -85,7 +85,7 @@ void Core::MultiCoreScan()
 
 void Core::SingleCoreScan()
 {
-    xvector<xstring> LvsDirectoriesToScan = OS::Dir(MoOptions.MsDirectory, 'r', MoOptions.McFindMod1, MoOptions.McFindMod2);
+    xvector<xstring> LvsDirectoriesToScan = RA::OS::Dir(MoOptions.MsDirectory, 'r', MoOptions.McFindMod1, MoOptions.McFindMod2);
     cout << Color::Cyan << "Files in Dir: " << LvsDirectoriesToScan.size() << ' ' << Color::Mod::Reset << endl;
 
     // render is single-threaded
@@ -99,10 +99,10 @@ void Core::PrintFiles()
     if (MoOptions.MbModify) {
         for (const xstring& file : MvsFileList)
         {
-            OS os;
+            RA::OS OS;
             if (file.size()) {
                 try {
-                    os.RunConsoleCommand("subl " + file);
+                    OS.RunConsoleCommand("subl " + file);
                 }
                 catch (std::runtime_error & err) {
                     cout << err.what() << endl;

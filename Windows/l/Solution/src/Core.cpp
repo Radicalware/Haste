@@ -28,9 +28,9 @@ Core::Core(int FnArgC, char** FasArgv)
 	}
 
 	if (MoOptions.MsDir.size())
-		MbExists = OS::Has(MoOptions.MsDir);
+		MbExists = RA::OS::Has(MoOptions.MsDir);
 	else {
-		MoOptions.MsDir = OS::PWD();
+		MoOptions.MsDir = RA::OS::PWD();
 		MbExists = true;
 	}
 
@@ -168,7 +168,7 @@ void Core::PrintLsStyleSize(xvector<Files*>& FvoFiles)
 		if (LnRowStringSize < MnConsoleWidth)
 		{
 			if (FvoFiles.size() % static_cast<size_t>(LnRowCount) != 0) {
-				if (LnRowStringSize + FvoFiles[0]->MsNamePtr->size() + MnSpaceSize < MnConsoleWidth)
+				if (LnRowStringSize + FvoFiles[0].MsNamePtr->size() + MnSpaceSize < MnConsoleWidth)
 					break;
 			}
 			else {
@@ -179,7 +179,7 @@ void Core::PrintLsStyleSize(xvector<Files*>& FvoFiles)
 	}
 
 	xvector<Files*> LvoLastRow = FvoFiles(-(LnRowCount - 1), 0, -LnRowCount, 's');
-	LvoLastRow << FvoFiles[0];
+	LvoLastRow << FvoFiles.RawPtr(0);
 
 	for (double idx = 0; idx < LnRowCount; idx++)
 	{
@@ -187,7 +187,7 @@ void Core::PrintLsStyleSize(xvector<Files*>& FvoFiles)
 		for (Files* LoFilePtr : FvoFiles(-idx, 0, -LnRowCount, 's'))
 		{
 			this->PrintFileOrDirectory(LoFilePtr);
-			this->AddWordSpace(LvoLastRow[Count]->MsNamePtr->size() - LoFilePtr->MsNamePtr->size() + 1);
+			this->AddWordSpace(LvoLastRow[Count].MsNamePtr->size() - LoFilePtr->MsNamePtr->size() + 1);
 			Count++;
 		}
 		if (idx < LnRowCount - 1) cout << '\n';
@@ -214,8 +214,8 @@ void Core::PrintLsStyleAlpha(xvector<Files*>& FvoFiles)
 		for (const xvector<Files*>& row_vals : LvvoFileStacks) { // for each row
 			int count_down = 0;
 			for (int col_idx = 0; col_idx < row_vals.size(); col_idx++) { // for each col of that row
-				if (LvnLongestColumnValues[col_idx] < row_vals[col_idx]->MsNamePtr->size()) {
-					LvnLongestColumnValues[col_idx] = row_vals[col_idx]->MsNamePtr->size(); // find the longest col value
+				if (LvnLongestColumnValues[col_idx] < row_vals[col_idx].MsNamePtr->size()) {
+					LvnLongestColumnValues[col_idx] = row_vals[col_idx].MsNamePtr->size(); // find the longest col value
 				}
 			}
 		}
@@ -283,15 +283,15 @@ void Core::AddWordSpace(size_t FnCount) const
 void Core::PrintLsStyle()
 {
 
-	if (OS::HasFile(MoOptions.MsDir)) {
-		cout << OS::FullPath(MoOptions.MsDir) << endl;
+	if (RA::OS::HasFile(MoOptions.MsDir)) {
+		cout << RA::OS::FullPath(MoOptions.MsDir) << endl;
 		return;
 	}
 
-	//MvsNexusVector.AddJob(OS::Dir(MoOptions.MsDir, 'f'));
-	//MvsNexusVector.AddJob(OS::Dir(MoOptions.MsDir, 'd'));
-	MvsNexusVector.AddJob((xvector<xstring>(*)(xstring, char))&OS::Dir, MoOptions.MsDir, 'f');
-	MvsNexusVector.AddJob((xvector<xstring>(*)(xstring, char))&OS::Dir, MoOptions.MsDir, 'd');
+	//MvsNexusVector.AddJob(RA::OS::Dir(MoOptions.MsDir, 'f'));
+	//MvsNexusVector.AddJob(RA::OS::Dir(MoOptions.MsDir, 'd'));
+	MvsNexusVector.AddJob((xvector<xstring>(*)(xstring, char))&RA::OS::Dir, MoOptions.MsDir, 'f');
+	MvsNexusVector.AddJob((xvector<xstring>(*)(xstring, char))&RA::OS::Dir, MoOptions.MsDir, 'd');
 	MvsNexusVector.WaitAll();
 	MvsNexusVector.WaitAll();
     MvsFiles = std::move(MvsNexusVector(0).GetValue());
@@ -335,18 +335,18 @@ void Core::PrintLsStyle()
 
 void Core::PrintDirStyle()
 {
-	OS LoOS;
-	if (LoOS.HasFile(MoOptions.MsDir)) {
-		cout << LoOS.RunConsoleCommand("DIR " + MoOptions.MsDir).Read();
+	RA::OS OS;
+	if (OS.HasFile(MoOptions.MsDir)) {
+		cout << OS.RunConsoleCommand("DIR " + MoOptions.MsDir).Read();
         return;
 	}
 
 	xstring LsDirectoryOut;
 	cout << "\n  ";
 	if (MoOptions.MsDir.size())
-		LsDirectoryOut = LoOS.RunConsoleCommand("DIR " + MoOptions.MsDir).Read();
+		LsDirectoryOut = OS.RunConsoleCommand("DIR " + MoOptions.MsDir).Read();
 	else
-		LsDirectoryOut = LoOS.RunConsoleCommand("DIR " + LoOS.PWD()).Read();
+		LsDirectoryOut = OS.RunConsoleCommand("DIR " + OS.PWD()).Read();
 
 	MvsFiles = LsDirectoryOut.Split(R"(^ Directory of.*$)")[1].Trim().Split('\n')(2, -2);
 
