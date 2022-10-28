@@ -47,6 +47,8 @@ struct Options
     Rex MoRex;
     xvector<RE2*> MvoAvoidList;
     xvector<RE2*> MvoAvoidFilesAndDirectoriesList;
+    xvector<RE2*> MvoTargetList;
+    xvector<RE2*> MvoTargetFilesAndDirectoriesList;
     xstring MsDirectory = "";
 
     bool MbUseFullPath = false;
@@ -61,4 +63,5 @@ struct Options
     void SetRegex(const xstring& FsInput);
     void SetAvoidRegex(const xvector<xstring>& FvsAvoidList);
     void SetAvoidDirectories(const xvector<xstring>& FvsAvoidList);
+    void SetTargetDirectories(const xvector<xstring>& FvsAvoidList);
 };

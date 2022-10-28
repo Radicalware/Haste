@@ -15,7 +15,7 @@ param (
 )
 
 # -----------------------------------
-$proj_name  = "Cipher";
+$proj_name  = "Cypher"; # B/C windows already has a cipher.exe app in your $PATH
 $executable = $true;
 # -----------------------------------
 

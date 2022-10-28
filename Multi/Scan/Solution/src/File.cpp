@@ -35,7 +35,7 @@ File::File(const xstring& FsPath, bool FbIsBinarySearch)
 #if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
         bool LbOpenFailure = false;
         try {
-            MsData = RA::OS::ReadFastMethod(MsPath);
+            MsData = RA::OS::ReadFile(MsPath);
         }
         ReadFileCatch
 
@@ -55,7 +55,7 @@ File::File(const xstring& FsPath, bool FbIsBinarySearch)
     }
     else { // not binary searching
         try {
-            MsData = RA::OS::ReadFastMethod(MsPath);
+            MsData = RA::OS::ReadFile(MsPath).RemoveNonAscii();
         }
         ReadFileCatch
     }

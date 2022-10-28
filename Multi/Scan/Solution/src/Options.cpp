@@ -13,12 +13,16 @@ Options::~Options()
     if(MvoAvoidList.size())
         for (RE2* val : MvoAvoidList)
             delete val;
-    if(!MvoAvoidFilesAndDirectoriesList.empty())
+    if (!MvoAvoidFilesAndDirectoriesList.empty())
         for (RE2* val : MvoAvoidFilesAndDirectoriesList)
+            delete val;
+    if (!MvoTargetFilesAndDirectoriesList.empty())
+        for (RE2* val : MvoTargetFilesAndDirectoriesList)
             delete val;
     // Make sure we don't delete the elements twice
     MvoAvoidList.clear();
     MvoAvoidFilesAndDirectoriesList.clear();
+    MvoTargetFilesAndDirectoriesList.clear();
 }
 
 void Options::SetDirectory(const xstring& FsInput, bool FbUsePassword)
@@ -66,3 +70,10 @@ void Options::SetAvoidDirectories(const xvector<xstring>& FvsAvoidList)
     for (const xstring& str : FvsAvoidList)
         MvoAvoidFilesAndDirectoriesList << new RE2(str);
 }
+
+void Options::SetTargetDirectories(const xvector<xstring>& FvsAvoidList)
+{
+    for (const xstring& str : FvsAvoidList)
+        MvoTargetFilesAndDirectoriesList << new RE2(str);
+}
+

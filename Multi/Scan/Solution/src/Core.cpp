@@ -4,6 +4,30 @@
 
 #pragma warning( disable : 26812 ) // to allow our rxm enum even though it isn't a class enum
 
+void Core::Filter()
+{
+    // Filter over the avoid list.
+    if (!MoOption.MvoAvoidFilesAndDirectoriesList.empty())
+    {
+        for (auto& x : MoOption.MvoAvoidFilesAndDirectoriesList)
+            MvsFileList.erase(
+                std::remove_if(MvsFileList.begin(), MvsFileList.end(),
+                    [&x](xstring& element) { return element.Scan(x->pattern(), rxm::icase); }),
+                MvsFileList.end());
+        cout << Color::Cyan << "Files in Dir (Filtered over exclusions): " << MvsFileList.size() << Color::Mod::Reset << endl;
+    }
+
+    if (!MoOption.MvoTargetFilesAndDirectoriesList.empty())
+    {
+        for (auto& x : MoOption.MvoTargetFilesAndDirectoriesList)
+            MvsFileList.erase(
+                std::remove_if(MvsFileList.begin(), MvsFileList.end(),
+                    [&x](xstring& TgtFile) { return !TgtFile.Scan(x->pattern(), rxm::icase); }),
+                MvsFileList.end());
+        cout << Color::Cyan << "Files in Dir (Targets): " << MvsFileList.size() << Color::Mod::Reset << endl;
+    }
+}
+
 Core::Core(const Options& options) : MoOption(options)
 {
 }
@@ -77,7 +101,7 @@ void Core::ScanFile(xstring& FsPath)
 
     GET(Rex, MoOption.MoRex.MoRe2.MoRexPtr);
     if (!MoOption.MbUseFullPath)
-        FsPath = '.' + FsPath(static_cast<double>(RA::OS::PWD().Size()), 0);
+        FsPath = '.' + FsPath(static_cast<double>(MsPWD.Size()));
 
     GSS(LoFile, MKP<File>(FsPath, MoOption.MbBinaraySearchOn));
     if (LoFile.MsError.Size())
@@ -87,6 +111,7 @@ void Core::ScanFile(xstring& FsPath)
     }
 
     bool LbAvoid = static_cast<bool>(MoOption.MvoAvoidList.Size());
+    bool LbTarget = static_cast<bool>(MoOption.MvoTargetList.Size());
     try
     {
         LoFile.MbMatches = LoFile.MsData.Scan(Rex);
@@ -119,13 +144,21 @@ void Core::ScanFile(xstring& FsPath)
     xstring LsSpacer = '.';
     if (MoOption.MbOnlyNameFiles)
     {
-        if (LbAvoid)
+        if (LbTarget)
+            LoFile.MbMatches = (LoFile.MbMatches && LoFile.MsData.ScanList(MoOption.MvoTargetList));
+        
+        if (LbAvoid && !(LbTarget && LoFile.MbMatches))
             LoFile.MbMatches = (LoFile.MbMatches && !LoFile.MsData.ScanList(MoOption.MvoAvoidList));
     }
     else {
         unsigned long int LnLineNumber = 0;
         for (const xstring& line : LoFile.MsData.Split('\n'))
         {
+            if (LbTarget) {
+                if (!line.ScanList(MoOption.MvoTargetList))
+                    continue;
+            }
+
             if (LbAvoid) {
                 if (line.ScanList(MoOption.MvoAvoidList))
                     continue;
@@ -176,25 +209,13 @@ void Core::MultiCoreScan()
         .Expand();
     MvsFileList += RA::OS::Dir(MoOption.MsDirectory, 'f');
 
-    // Filter over the avoid list.
-    if (!MoOption.MvoAvoidFilesAndDirectoriesList.empty())
-    {
-        for (auto& x : MoOption.MvoAvoidFilesAndDirectoriesList)
-            MvsFileList.erase(
-                std::remove_if(MvsFileList.begin(), MvsFileList.end(),
-                    [&x](xstring& element) { return element.Scan(x->pattern(), rxm::icase); }),
-                MvsFileList.end());
-        cout << Color::Cyan << "Files in Dir (Filtered over exclusions): " << MvsFileList.size() << Color::Mod::Reset << endl;
-    }
-    else
-    {
-        cout << Color::Cyan << "Files in Dir: " << MvsFileList.size() << Color::Mod::Reset << endl;
-    }
 
+    Filter();
+    cout << Color::Cyan << "Files in Dir: " << MvsFileList.size() << Color::Mod::Reset << endl;
+    
     // xrender is multi-threaded
     // "this" is passed in with std::ref but never modified
     MvoFiles.clear();
-    MvoFiles.CheckMutex();
     for (auto& File : MvsFileList)
         Nexus<>::AddJob(This, &Core::ScanFile, File);
     Nexus<>::WaitAll();
@@ -205,24 +226,13 @@ void Core::SingleCoreScan()
 {
     Begin();
     MvsFileList = RA::OS::Dir(MoOption.MsDirectory, 'r', 'f');
-    // Filter over the avoid list.
-    if (!MoOption.MvoAvoidFilesAndDirectoriesList.empty())
-    {
-        for (auto& x : MoOption.MvoAvoidFilesAndDirectoriesList)
-            MvsFileList.erase(
-                std::remove_if(MvsFileList.begin(), MvsFileList.end(),
-                    [&x](xstring& element) { return element.Scan(x->pattern(), rxm::icase); }),
-                MvsFileList.end());
-        cout << Color::Cyan << "Files in Dir (Filtered over exclusions): " << MvsFileList.Size() << Color::Mod::Reset << endl;
-    }
-    else
-    {
-        cout << Color::Cyan << "Files in Dir: " << MvsFileList.Size() << Color::Mod::Reset << endl;
-    }
+
+    Filter();
+    cout << Color::Cyan << "Files in Dir: " << MvsFileList.size() << Color::Mod::Reset << endl;
 
     MvoFiles.clear();
     for (auto& File : MvsFileList)
-        Nexus<>::AddJob(This, &Core::ScanFile, File);
+        This.ScanFile(File);
     Nexus<>::WaitAll();
     Rescue();
 }

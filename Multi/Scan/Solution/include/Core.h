@@ -14,6 +14,9 @@ class Core
 
     File* MoPipedDataPtr = nullptr;
     const RE2 MoBackslashRex = R"(\\)";
+    const xstring MsPWD = RA::OS::PWD();
+
+    void Filter();
 
 public:
     Core(const Options& FoOptions);

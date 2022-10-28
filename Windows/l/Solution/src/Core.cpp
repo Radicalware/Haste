@@ -128,7 +128,7 @@ void Core::ContinuedPrintFiles(xvector<Files>& FvoDirectory)
 	for (Files& file : FvoDirectory)
 		LnTotalNumberOfCharacters += file.MsNamePtr->size() + MnSpaceSize;
 
-	xvector<Files*> pfiles = FvoDirectory.GetPtrs(); // todo: undo this data creation
+	auto pfiles = FvoDirectory.GetPtrs(); // todo: undo this data creation
 
 	if(MoOptions.MbSortBySize && LnTotalNumberOfCharacters > MnConsoleWidth){
 		this->PrintLsStyleSize(pfiles);
@@ -214,7 +214,7 @@ void Core::PrintLsStyleAlpha(xvector<Files*>& FvoFiles)
 		for (const xvector<Files*>& row_vals : LvvoFileStacks) { // for each row
 			int count_down = 0;
 			for (int col_idx = 0; col_idx < row_vals.size(); col_idx++) { // for each col of that row
-				if (LvnLongestColumnValues[col_idx] < row_vals[col_idx].MsNamePtr->size()) {
+				if (LvnLongestColumnValues[col_idx] < row_vals [col_idx].MsNamePtr->size()) {
 					LvnLongestColumnValues[col_idx] = row_vals[col_idx].MsNamePtr->size(); // find the longest col value
 				}
 			}

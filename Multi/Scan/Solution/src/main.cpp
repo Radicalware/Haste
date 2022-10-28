@@ -43,6 +43,7 @@ int Help(int FnReturnError) {
       -t     |  --threads   |  (int)   Set Thread Count
       -v     |  --void      |  (array) Void search these syntax
       -a     |  --avoid     |  (array) Avoid searching these paths
+      -t     |  --target    |  (array) Target searching these paths
       -f     |  --full      |  (bool)  Show the Full Path
       -c     |  --case      |  (bool)  Case-Sensitive Regex
       -b     |  --binary    |  (bool)  Search Binary Files 
@@ -87,12 +88,13 @@ int main(int argc, char** argv)
     Options LoOption;
     Core core(LoOption);
 
-    LoSys.AddAlias('r', "--regex"); // -- always required
+    LoSys.AddAlias('r', "--regex");  // -- always required
 
-    LoSys.AddAlias('d', "--dir");   // -- usual bools
+    LoSys.AddAlias('d', "--dir");    // -- usual bools
     LoSys.AddAlias('t', "--threads");
-    LoSys.AddAlias('v', "--void");  // -- while discarding matches with this regex
-    LoSys.AddAlias('a', "--avoid"); // -- avoiding the files and directories
+    LoSys.AddAlias('v', "--void");   // -- while discarding matches with this regex
+    LoSys.AddAlias('a', "--avoid");  // -- avoiding the files and directories
+    LoSys.AddAlias('t', "--target"); // -- target the files and directories
     LoSys.AddAlias('f', "--full");
     LoSys.AddAlias('c', "--case");
     LoSys.AddAlias('b', "--binary");
@@ -140,7 +142,6 @@ int main(int argc, char** argv)
         core.Print();
         return Nexus<>::Stop(); // << -------- return ----------------------
     }
-
     else if (!LoSys.HasArgs()) {
         if (argc == 2) {
             LoOption.SetRegex(argv[1]);
@@ -160,6 +161,7 @@ int main(int argc, char** argv)
     }
     if (LoSys('v'))  LoOption.SetAvoidRegex(LoSys['v']);
     if (LoSys('a'))  LoOption.SetAvoidDirectories(LoSys['a']);
+    if (LoSys('t'))  LoOption.SetTargetDirectories(LoSys['t']);
 
     core.PrintDivider();
     if (LoSys('o')) {
