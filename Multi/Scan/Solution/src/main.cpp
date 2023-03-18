@@ -27,10 +27,13 @@
 #include "Core.h"
 #include "Options.h"
 
+// #include <vld.h>
+
+
 int Help(int FnReturnError) {
     cout << R"(
 
-    Scan is used to scan for text in files Recursivly
+    Scan is used to scan for text in files Recursivly.
 
     ------------------------------------------------------------------
       REQUIRED
@@ -48,6 +51,7 @@ int Help(int FnReturnError) {
       -c     |  --case      |  (bool)  Case-Sensitive Regex
       -b     |  --binary    |  (bool)  Search Binary Files 
       -n     |  --name      |  (bool)  Only Name the Files Found
+      -l     |  --errors    |  (bool)  Include locked file errors
     ------------------------------------------------------------------
        THESE CHANGE THE STANDARD PROCEDURE
     ------------------------------------------------------------------
@@ -99,6 +103,7 @@ int main(int argc, char** argv)
     LoSys.AddAlias('c', "--case");
     LoSys.AddAlias('b', "--binary");
     LoSys.AddAlias('n', "--name");
+    LoSys.AddAlias('l', "--locked");
 
     LoSys.AddAlias('o', "--one");    // -- setting only one thread path is not the same as -t 1
     LoSys.AddAlias('m', "--modify");
@@ -130,6 +135,7 @@ int main(int argc, char** argv)
     if (LoSys('b')) LoOption.MbBinaraySearchOn = true;
     if (LoSys('n')) LoOption.MbOnlyNameFiles = true;
     if (LoSys('m')) LoOption.MbModify = true;
+    if (LoSys('l')) LoOption.MoIncludeLockedFileErros = true;
 
     if (LoSys('p')) LoOption.MbPiped = true;
     if (LoSys('e')) LoOption.MbEntire = true;
@@ -177,7 +183,7 @@ int main(int argc, char** argv)
     cout << Color::Cyan << "Time: " << LoTimer << Color::Mod::Reset << endl;
     core.PrintDivider();
 
-    RescuePrint();
+    FinalRescue();
     return Nexus<>::Stop();
 }
 

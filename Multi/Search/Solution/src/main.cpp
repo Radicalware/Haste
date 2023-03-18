@@ -29,6 +29,7 @@ int Help(int FnValue = 0);
 
 int main(int argc, char** argv)
 {
+    Begin();
     Nexus<>::Start();
     RA::Timer LoTimer;
     RA::SYS Args;
@@ -101,12 +102,14 @@ int main(int argc, char** argv)
 	}
     cout << "Time: " << LoTimer << Color::Mod::Reset << endl;
 
+    RescuePrint();
     return Nexus<>::Stop();
 }
 
 
-int Help(int FnValue){
-
+int Help(int FnValue)
+{
+    Begin();
 	cout << R"Help(
     Search is used to Search for Files
 
@@ -140,4 +143,5 @@ int Help(int FnValue){
 
 )Help";
     return Nexus<>::Stop();
+    Rescue();
 }

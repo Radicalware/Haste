@@ -12,7 +12,7 @@ project(${THIS})
 set(EXES ${THIS})
 
 set(PrivateLibs "")
-find_package(re2 CONFIG REQUIRED)
+list(APPEND PrivateLibs "Iterator")
 list(APPEND PrivateLibs "Memory")
 list(APPEND PrivateLibs "Nexus")
 list(APPEND PrivateLibs "xvector")
@@ -26,4 +26,3 @@ list(APPEND PublicLibs "CC")
 list(APPEND PublicLibs "OS")
 
 BuildRadicalSolution(PrivateLibs PublicLibs)
-link_libraries(${THIS} re2::re2)

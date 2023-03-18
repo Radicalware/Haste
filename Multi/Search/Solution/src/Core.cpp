@@ -11,15 +11,15 @@ Core::~Core()
 {
 }
 
-xstring  Core::FindMatchingFiles(xstring& FsItem, Core& FoCore)
+xp<xstring>  Core::FindMatchingFiles(xstring& FsItem, const Core& FoCore)
 {
+    Begin();
     // note: at this point, there are only single backslashes
-    // the inclusive-split sets them to double backslash to cancel out special characters.
-
-
+    // the inclusive-split sets them to double backslash to cancel out special character
     bool LbMatched = false;
     if (FoCore.MoOptions.MvoAvoidList.size())
-        LbMatched = (FsItem.Scan(*FoCore.MoOptions.MoRegularExpression.MoRegularExpressionG2.MoRegularExpressionPtr) && !FsItem.ScanList(FoCore.MoOptions.MvoAvoidList));
+        LbMatched = (FsItem.Scan(*FoCore.MoOptions.MoRegularExpression.MoRegularExpressionG2.MoRegularExpressionPtr) 
+            && !FsItem.ScanList(FoCore.MoOptions.MvoAvoidList));
     else
         LbMatched = (FsItem.Scan(*FoCore.MoOptions.MoRegularExpression.MoRegularExpressionG2.MoRegularExpressionPtr));
 
@@ -29,15 +29,14 @@ xstring  Core::FindMatchingFiles(xstring& FsItem, Core& FoCore)
     if (!FoCore.MoOptions.MbUseFullPath)
         FsItem = "." + FsItem.substr(FoCore.MoOptions.MsDirectory.size(), FsItem.size() - FoCore.MoOptions.MsDirectory.size());
     
-    
     if (FoCore.MoOptions.MbSwapSplit)
 #ifdef WIN_BASE
-        FsItem = FsItem.Sub("\\\\", "/");
+        FsItem.InSub('\\', "/");
 #else
-        FsItem = FsItem.Sub("/", "\\");
+        FsItem.InSub('/', "\\");
 #endif
     xvector<xstring> LvsFound = FsItem.InclusiveSplit(FoCore.MoOptions.MoRegularExpression.MoStd.MoRegularExpression, false);
-    xstring LsColoredPath;
+    GET(LsColoredPath, MKP<xstring>());
     if (!LvsFound.size())
         return LsColoredPath;
 
@@ -65,12 +64,14 @@ xstring  Core::FindMatchingFiles(xstring& FsItem, Core& FoCore)
             }
         }
     }
-    return LsColoredPath;
+    return LsColoredPathPtr;
+    Rescue();
 }
 
 void Core::MultiCoreScan()
 {
-    xvector<xstring> LvsDirectoriesToScan;
+    Begin();
+    xvector<xp<xstring>> LvsDirectoriesToScan;
     LvsDirectoriesToScan = RA::OS::Dir(MoOptions.MsDirectory, 'd').
         ForEachThread<xvector<xstring>>([this](xstring& dir) { return RA::OS::Dir(dir, 'r', MoOptions.McFindMod1, MoOptions.McFindMod2); }).
         Expand();
@@ -80,36 +81,43 @@ void Core::MultiCoreScan()
     cout << Color::Cyan << "Files in Dir: " << LvsDirectoriesToScan.size() << Color::Mod::Reset << endl;
 
     // xrender is multi-threaded
-    MvsFileList = LvsDirectoriesToScan.ForEachThread(&Core::FindMatchingFiles, std::ref(*this));
+   MvsFileList = 
+        LvsDirectoriesToScan.ForEachThread<xstring>(&Core::FindMatchingFiles, The);
+    Rescue();
 }
 
 void Core::SingleCoreScan()
 {
+    Begin();
     xvector<xstring> LvsDirectoriesToScan = RA::OS::Dir(MoOptions.MsDirectory, 'r', MoOptions.McFindMod1, MoOptions.McFindMod2);
     cout << Color::Cyan << "Files in Dir: " << LvsDirectoriesToScan.size() << ' ' << Color::Mod::Reset << endl;
 
     // render is single-threaded
-    MvsFileList = LvsDirectoriesToScan.ForEach(&Core::FindMatchingFiles, std::ref(*this));
+    MvsFileList = LvsDirectoriesToScan.ForEach<xp<xstring>>(&Core::FindMatchingFiles, The);
+    Rescue();
 }
 
 void Core::PrintFiles()
 {
-    // m_file_list.Join('\n').Print(); // does not check for size()
-
+    Begin();
     if (MoOptions.MbModify) {
-        for (const xstring& file : MvsFileList)
+        for (const xp<xstring>& FsFileNamePtr : MvsFileList)
         {
+            GET(FsFileName);
             RA::OS OS;
-            if (file.size()) {
+            if (FsFileName.Size()) {
                 try {
-                    OS.RunConsoleCommand("subl " + file);
+                    OS.RunConsoleCommand("subl " + FsFileName);
                 }
                 catch (std::runtime_error & err) {
-                    cout << err.what() << endl;
+                    printf(err.what());
                 }
             }
         }
     }
-    else for (const xstring& file : MvsFileList) if (file.size()) file.Print();
-    // bad syntax but it looks cool
+    else 
+        for (const xp<xstring>& FsFileNamePtr : MvsFileList) 
+            if (FsFileNamePtr.Get().Size()) 
+                FsFileNamePtr.Get().Print();
+    Rescue();
 }

@@ -22,14 +22,14 @@ struct Options
     {
         struct g2
         {
-            RE2* MoRegularExpressionPtr = nullptr;
-            re2::RE2::Options* MoModsPtr = nullptr;
+            xp<RE2> MoRegularExpressionPtr = nullptr;
+            xp<re2::RE2::Options> MoModsPtr = nullptr;
         };
         struct stl
         {
             std::regex MoRegularExpression;
             #pragma warning (suppress : 26812)
-            rxm::type MoMods = (rxm::icase | rxm::ECMAScript);
+            RXM::Type MoMods = (RXM::icase | RXM::ECMAScript);
         };
         g2 MoRegularExpressionG2;
         stl MoStd;
@@ -43,7 +43,7 @@ struct Options
     ~Options();
 
     Rex MoRegularExpression;
-    xvector<re2::RE2*> MvoAvoidList;
+    xvector<xp<re2::RE2>> MvoAvoidList;
     xstring MsDirectory;
 
     bool MbUseFullPath = false;

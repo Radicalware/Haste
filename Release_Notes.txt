@@ -4,6 +4,12 @@
 
 ---------------------------------------------------------------------
 
+09/20/2021 >> Haste v6.82
+
+Significant speed increases after Libs update v22.0.4
+
+---------------------------------------------------------------------
+
 09/20/2021 >> Haste v6.7.0
 
 afs.exe was renamed to Scan.exe and f.exe was renamed to Find.exe

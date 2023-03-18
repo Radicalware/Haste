@@ -6,15 +6,16 @@
 
 void Core::Filter()
 {
+    Begin();
     // Filter over the avoid list.
     if (!MoOption.MvoAvoidFilesAndDirectoriesList.empty())
     {
         for (auto& x : MoOption.MvoAvoidFilesAndDirectoriesList)
             MvsFileList.erase(
                 std::remove_if(MvsFileList.begin(), MvsFileList.end(),
-                    [&x](xstring& element) { return element.Scan(x->pattern(), rxm::icase); }),
+                    [&x](xstring& element) { return element.Scan(x->pattern(), RXM::icase); }),
                 MvsFileList.end());
-        cout << Color::Cyan << "Files in Dir (Filtered over exclusions): " << MvsFileList.size() << Color::Mod::Reset << endl;
+        (Color::Cyan << "Files in Dir (Filtered over exclusions): " << MvsFileList.size() << Color::Mod::Reset).Print();
     }
 
     if (!MoOption.MvoTargetFilesAndDirectoriesList.empty())
@@ -22,34 +23,28 @@ void Core::Filter()
         for (auto& x : MoOption.MvoTargetFilesAndDirectoriesList)
             MvsFileList.erase(
                 std::remove_if(MvsFileList.begin(), MvsFileList.end(),
-                    [&x](xstring& TgtFile) { return !TgtFile.Scan(x->pattern(), rxm::icase); }),
+                    [&x](xstring& TgtFile) { return !TgtFile.Scan(x->pattern(), RXM::icase); }),
                 MvsFileList.end());
-        cout << Color::Cyan << "Files in Dir (Targets): " << MvsFileList.size() << Color::Mod::Reset << endl;
+        (Color::Cyan << "Files in Dir (Targets): " << MvsFileList.size() << Color::Mod::Reset).Print();
     }
+    Rescue();
 }
 
 Core::Core(const Options& options) : MoOption(options)
 {
 }
 
-Core::~Core()
-{
-    if (MoPipedDataPtr)
-        delete MoPipedDataPtr;
-    MoPipedDataPtr = nullptr; // Code review: Prevent double delete.
-}
-
-
 void Core::PipedScan()
 {
-    MoPipedDataPtr = new File;
-    File& LoFile = *MoPipedDataPtr;
+    Begin();
+    MoFilePtr = MKP<File>();
+    GET(MoFile);
 
-    LoFile.MbPipedData = true;
+    MoFile.MbPipedData = true;
 
-    LoFile.MsPath = "Piped Data";
+    MoFile.MsPath = "Piped Data";
     if (MoOption.MbEntire)
-        LoFile.MbIndent = true;
+        MoFile.MbIndent = true;
 
     xstring LsLine = "";
     // unsigned long int LnLineNumber = 0; // Code review: Unused code. TBR.
@@ -58,7 +53,7 @@ void Core::PipedScan()
     {
         if (MoOption.MbEntire && LsLine.Size() == 0)
         {
-            LoFile.MvsLines << '\0';
+            MoFile.MvsLines << '\0';
             continue;
         }
         xvector<xstring> LvsSegments = LsLine.InclusiveSplit(MoOption.MoRex.MoStd.MoRex, false);
@@ -81,54 +76,67 @@ void Core::PipedScan()
                     LbMatchOn = true;
                 }
             }
-            LoFile.MvsLines << LsColoredLine;
+            MoFile.MvsLines << LsColoredLine;
         }
         else if (MoOption.MbEntire)
         {
-            LoFile.MvsLines << LsLine;
+            MoFile.MvsLines << LsLine;
         }
     }
+    Rescue();
 }
 
 void Core::ScanFile(xstring& FsPath)
 {
     Begin();
-    auto AddFile = [this](const xp<File>& FoFilePtr) -> void
+
+    //xstring Str = "C:\Source\Radicalware\Applications\Multi\Scan\file.cpp";
+
+    // lambdas prevent you from getting exception visibiliity so I won't use them here
+    auto AddFile = [](Core& FThis, const xp<File>& FoFilePtr) -> void
     {
-        auto Lock = MvoFiles.GetMutex().CreateLock();
-        MvoFiles << FoFilePtr;
+        Begin();
+        auto Lock = FThis.MvoFiles.CreateLock();
+        FThis.MvoFiles << FoFilePtr;
+        FinalRescue();
     };
 
+
     GET(Rex, MoOption.MoRex.MoRe2.MoRexPtr);
+    //auto& Rex = MoOption.MoRex.MoStd.MoRex;
+
     if (!MoOption.MbUseFullPath)
         FsPath = '.' + FsPath(static_cast<double>(MsPWD.Size()));
 
-    GSS(LoFile, MKP<File>(FsPath, MoOption.MbBinaraySearchOn));
+    GET(LoFile, MKP<File>(FsPath, MoOption.MbBinaraySearchOn));
     if (LoFile.MsError.Size())
     {
         LoFile.MsData.clear();
-        return AddFile(LoFilePtr);
+        return AddFile(The, LoFilePtr);
+        //auto Lock = MvoFiles.CreateLock();
+        //MvoFiles << MoFilePtr;
+        //return;
     }
 
-    bool LbAvoid = static_cast<bool>(MoOption.MvoAvoidList.Size());
+    bool LbAvoid  = static_cast<bool>(MoOption.MvoAvoidList.Size());
     bool LbTarget = static_cast<bool>(MoOption.MvoTargetList.Size());
     try
     {
         LoFile.MbMatches = LoFile.MsData.Scan(Rex);
     }catch(...)
     {
-        auto Lock = MvoFiles.GetMutex().CreateLock();
-        cout << "Can't Scan File: " << LoFile.MsPath << '\n';
+        auto Lock = MvoFiles.CreateLock();
+        ("Can't Scan File: " + LoFile.MsPath + '\n').Print();
     }
 
     if (!LoFile.MbMatches)
     {
         LoFile.MsData.clear();
-        return AddFile(LoFilePtr);
+        return AddFile(The, LoFilePtr);
     }
 
     if (MoOption.MbModify)
-        return AddFile(LoFilePtr);
+        return AddFile(The, LoFilePtr);
 
     if (MoOption.MbBinaraySearchOn)
     {
@@ -136,7 +144,7 @@ void Core::ScanFile(xstring& FsPath)
         if (LoFile.MbBinary)
         {
             LoFile.MsData.clear();
-            return AddFile(LoFilePtr);
+            return AddFile(The, LoFilePtr);
         }
     }
 
@@ -166,37 +174,45 @@ void Core::ScanFile(xstring& FsPath)
 
             LnLineNumber++;
             LsLineNumberString = RA::ToXString(LnLineNumber);
-            xvector<xstring> segs = line.InclusiveSplit(MoOption.MoRex.MoStd.MoRex, false);
-            xstring colored_line = "";
-            if (segs.size())
+            xvector<xstring> LvSegs = line.InclusiveSplit(MoOption.MoRex.MoStd.MoRex, false);
+            xstring LsColoredLine = "";
+            if (LvSegs.size())
             {
-                colored_line = Color::Mod::Bold + Color::Cyan + "Line " + (LsSpacer * (7 - LsLineNumberString.Size())) + ' ' + LsLineNumberString + ": " + Color::Mod::Reset;
+                LsColoredLine = Color::Mod::Bold + Color::Cyan + "Line " + (LsSpacer * (7 - LsLineNumberString.Size())) + ' ' + LsLineNumberString + ": " + Color::Mod::Reset;
                 LoFile.MbMatches = true;
                 bool LbMatchOn = false;
-                if (segs[0].Match(Rex))
+                if (LvSegs[0].Match(Rex))
                     LbMatchOn = true;
 
-                segs[0].LeftTrim();
-                for (xstring& seg : segs)
+                LvSegs[0].LeftTrim();
+                bool LbHasRealFind = false;
+                for (xstring& LsSeg : LvSegs)
                 {
+                    if (!LsSeg)
+                        continue;
+
                     if (LbMatchOn)
                     {
-                        colored_line += Color::Mod::Bold + Color::Red + seg + Color::Mod::Reset;
+                        LbHasRealFind = true;
+                        LsColoredLine += Color::Mod::Bold + Color::Red + LsSeg + Color::Mod::Reset;
                         LbMatchOn = false;
                     }
                     else {
-                        colored_line += seg;
+                        LsColoredLine += LsSeg;
                         LbMatchOn = true;
                     }
                 }
-                LoFile.MvsLines << colored_line;
+
+                if(LbHasRealFind)
+                    LoFile.MvsLines << LsColoredLine;
             }
         }
     }
+
     if (!LoFile.MvsLines.Size() && !MoOption.MbOnlyNameFiles) // Code review: MvsLines is not alwasys avialable 
         LoFile.MbMatches = false;
     LoFile.MsData.clear();
-    AddFile(LoFilePtr);
+    AddFile(The, LoFilePtr);
     Rescue();
 }
 
@@ -209,15 +225,17 @@ void Core::MultiCoreScan()
         .Expand();
     MvsFileList += RA::OS::Dir(MoOption.MsDirectory, 'f');
 
-
     Filter();
-    cout << Color::Cyan << "Files in Dir: " << MvsFileList.size() << Color::Mod::Reset << endl;
+    (Color::Cyan << "Files in Dir: " << MvsFileList.size() << Color::Mod::Reset).Print();
     
     // xrender is multi-threaded
     // "this" is passed in with std::ref but never modified
     MvoFiles.clear();
+    MvoFiles.CreateMTX();
+    Nexus<>::Disable();
     for (auto& File : MvsFileList)
-        Nexus<>::AddJob(This, &Core::ScanFile, File);
+        Nexus<>::AddTask(The, &Core::ScanFile, File);
+    Nexus<>::Enable();
     Nexus<>::WaitAll();
     Rescue();
 }
@@ -228,11 +246,14 @@ void Core::SingleCoreScan()
     MvsFileList = RA::OS::Dir(MoOption.MsDirectory, 'r', 'f');
 
     Filter();
-    cout << Color::Cyan << "Files in Dir: " << MvsFileList.size() << Color::Mod::Reset << endl;
+    (Color::Cyan << "Files in Dir: " << MvsFileList.size() << Color::Mod::Reset).Print();
 
     MvoFiles.clear();
+    MvoFiles.CreateMTX();
+    Nexus<>::Disable();
     for (auto& File : MvsFileList)
-        This.ScanFile(File);
+        The.ScanFile(File);
+    Nexus<>::Enable();
     Nexus<>::WaitAll();
     Rescue();
 }
@@ -240,9 +261,10 @@ void Core::SingleCoreScan()
 void Core::Print()
 {
     Begin();
-    if (MoPipedDataPtr != nullptr)
+    if (MoFilePtr != nullptr)
     {
-        MoPipedDataPtr->Print();
+        GET(MoFile);
+        MoFile.Print();
         return;
     }
 
@@ -258,7 +280,7 @@ void Core::Print()
                     OS.RunConsoleCommand("subl " + Target.MsPath);
                 }
                 catch (std::runtime_error& err) {
-                    cout << err.what() << endl;
+                    printf("%s\n", err.what());
                 }
             }
         }
@@ -266,7 +288,7 @@ void Core::Print()
 
     if (MoOption.MbOnlyNameFiles) // print what the user was looking for
     {
-        This.PrintDivider();
+        The.PrintDivider();
         bool LbMatchFound = false;
         for (xp<File>& TargetPtr : MvoFiles)
         {
@@ -274,12 +296,12 @@ void Core::Print()
             if (Target.MbBinary || Target.MsError.size())
                 continue;
             if (Target.MbMatches) {
-                Target.MsPath.Sub(MoBackslashRex, "\\\\").Print();
+                Target.MsPath.InSub('\\', "\\\\").Print();
                 LbMatchFound = true;
             }
         }
         if (!LbMatchFound)
-            cout << "No Matches Found\n";
+            printf("No Matches Found\n");
     }
     else {
         for (xp<File>& TargetPtr : MvoFiles)
@@ -291,36 +313,45 @@ void Core::Print()
         };
     }
 
-    This.PrintDivider();
+    The.PrintDivider();
     bool LbBinaryMatched = false;
-    for (const xp<File>& TargetPtr : MvoFiles) // print binary names
+    Nexus<>::WaitAll();
+    for (xp<File>& TargetPtr : MvoFiles) // print binary names
     {
         GSS(Target);
         if (Target.MsError.Size())
             continue;
 
         if (Target.MbBinary && Target.MbMatches) {
-            cout << "Binary File Matches: " << Target.MsPath.Sub(MoBackslashRex, "\\\\") << '\n';
+            ("Binary File Matches: " + Target.MsPath.InSub('\\', "\\\\")).Print();
             LbBinaryMatched = true;
         }
     }
     if (LbBinaryMatched)
-        This.PrintDivider();
+        The.PrintDivider();
 
     bool LbErrorMatched = false;
-    for (const xp<File>& TargetPtr : MvoFiles) // print errors
+    if (MoOption.MoIncludeLockedFileErros)
     {
-        GSS(Target);
-        if (Target.MsError.Size()) {
-            cout << Target.MsError << '\n';
-            LbErrorMatched = true;
+        for (const xp<File>& TargetPtr : MvoFiles) // print errors
+        {
+            GSS(Target);
+            if (Target.MsError.Size()) {
+                Target.MsError.Print();
+                LbErrorMatched = true;
+            }
         }
+        if (LbErrorMatched)
+            The.PrintDivider();
     }
-    if (LbErrorMatched)
-        This.PrintDivider();
+
     Rescue();
 }
 
 void Core::PrintDivider() const {
-    cout << Color::Blue << xstring(RA::OS::GetConsoleSize()[0], '-') << Color::Mod::Reset;
+    xstring Out;
+    Out += Color::Blue;
+    Out += xstring(RA::OS::GetConsoleSize()[0], '-');
+    Out += Color::Mod::Reset;
+    Out.Print();
 }

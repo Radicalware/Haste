@@ -4,22 +4,11 @@
 
 Options::Rex::~Rex()
 {
-    if(MoRe2.MoRexPtr) delete MoRe2.MoRexPtr;
-    if(MoRe2.MoModsPtr) delete MoRe2.MoModsPtr;
 }
 
 Options::~Options()
 {
     if(MvoAvoidList.size())
-        for (RE2* val : MvoAvoidList)
-            delete val;
-    if (!MvoAvoidFilesAndDirectoriesList.empty())
-        for (RE2* val : MvoAvoidFilesAndDirectoriesList)
-            delete val;
-    if (!MvoTargetFilesAndDirectoriesList.empty())
-        for (RE2* val : MvoTargetFilesAndDirectoriesList)
-            delete val;
-    // Make sure we don't delete the elements twice
     MvoAvoidList.clear();
     MvoAvoidFilesAndDirectoriesList.clear();
     MvoTargetFilesAndDirectoriesList.clear();
@@ -27,53 +16,61 @@ Options::~Options()
 
 void Options::SetDirectory(const xstring& FsInput, bool FbUsePassword)
 {
+    Begin();
     if (FsInput.Scan(R"(\.\.[/\\])"))
         MbUseFullPath = true;
     else if (FsInput.Match(R"(^[A-Z]\:.*$)") && !FbUsePassword)
         MbUseFullPath = true;
 
     MsDirectory = RA::OS::FullPath(FsInput);
+    Rescue();
 }
 
 void Options::SetRegex(const xstring& FsInput) 
 {
+    Begin();
 #if (defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64))
     MoRex.MsStr = xstring('(') + FsInput + ')';
     // swap a literal regex backslash for two literal backslashes
 #else
-    MoRex.MsStr = MoRex.MsStr + '(' + FsInput.Sub(R"(\\\\)", "\\") + ')';
+    MoRex.MsStr = MoRex.MsStr + '(' + FsInput.InSub(R"(\\\\)", "\\") + ')';
 #endif
-    if (MoRex.MoRe2.MoModsPtr) delete MoRex.MoRe2.MoModsPtr;
-    MoRex.MoRe2.MoModsPtr = new re2::RE2::Options;
+    MoRex.MoRe2.MoModsPtr = MKP<re2::RE2::Options>();
     if (MoRex.MbCaseSensitive)
     {
         MoRex.MoRe2.MoModsPtr->set_case_sensitive(true);
-        MoRex.MoStd.MoMods = (rxm::ECMAScript);
+        MoRex.MoStd.MoMods = (RXM::ECMAScript);
     }
     else {
         MoRex.MoRe2.MoModsPtr->set_case_sensitive(false);
-        MoRex.MoStd.MoMods = (rxm::icase | rxm::ECMAScript);
+        MoRex.MoStd.MoMods = (RXM::icase | RXM::ECMAScript);
     }
-    if (MoRex.MoRe2.MoRexPtr) delete MoRex.MoRe2.MoRexPtr;
-    MoRex.MoRe2.MoRexPtr = new RE2(MoRex.MsStr, *MoRex.MoRe2.MoModsPtr);
+    MoRex.MoRe2.MoRexPtr = MKP<RE2>(MoRex.MsStr, MoRex.MoRe2.MoModsPtr.Get());
     MoRex.MoStd.MoRex = std::regex(MoRex.MsStr, MoRex.MoStd.MoMods);
+    Rescue();
 }
 
 void Options::SetAvoidRegex(const xvector<xstring>& FvsAvoidList) 
 {
+    Begin();
     for (const xstring& str : FvsAvoidList)
-        MvoAvoidList << new RE2(str);
+        MvoAvoidList << MKP<RE2>(str);
+    Rescue();
 }
 
 void Options::SetAvoidDirectories(const xvector<xstring>& FvsAvoidList)
 {
+    Begin();
     for (const xstring& str : FvsAvoidList)
-        MvoAvoidFilesAndDirectoriesList << new RE2(str);
+        MvoAvoidFilesAndDirectoriesList << MKP<RE2>(str);
+    Rescue();
 }
 
 void Options::SetTargetDirectories(const xvector<xstring>& FvsAvoidList)
 {
+    Begin();
     for (const xstring& str : FvsAvoidList)
-        MvoTargetFilesAndDirectoriesList << new RE2(str);
+        MvoTargetFilesAndDirectoriesList << MKP<RE2>(str);
+    Rescue();
 }
 

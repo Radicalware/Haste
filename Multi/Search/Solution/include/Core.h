@@ -8,16 +8,16 @@ class Core
 {
     const Options& MoOptions; // based on user input
 
-    xvector<xstring> MvsFileList;
+    xvector<xp<xstring>> MvsFileList;
 	xvector<std::thread> MvoThreads;
     xvector<xstring> MvsFoundFiles;
-    RE2 MoBackslashRex = R"((\\\\))";
+    istatic RE2 SoBackslashRex = R"(\\)";
 
 public:
     Core(const Options& FoOptions);
     ~Core();
 
-    static xstring FindMatchingFiles(xstring& FsItem, Core& FoCore);
+    static xp<xstring> FindMatchingFiles(xstring& FsItem, const Core& FoCore);
 
     void MultiCoreScan();
     void SingleCoreScan();

@@ -13,6 +13,7 @@ using std::endl;
 #include "xvector.h"
 #include "xstring.h"
 #include "OS.h"
+#include "Memory.h"
 // ---------- RADICALWARE ---------------
 
 
@@ -23,13 +24,13 @@ struct Options
     {
         struct g2
         {
-            RE2* MoRexPtr = nullptr;
-            re2::RE2::Options* MoModsPtr = nullptr;
+            xp<RE2> MoRexPtr = nullptr;
+            xp<re2::RE2::Options> MoModsPtr;
         };
         struct stl
         {
             std::regex MoRex;
-            rxm::type MoMods;
+            RXM::Type MoMods;
         };
 
         g2 MoRe2;
@@ -45,10 +46,10 @@ struct Options
     ~Options();
 
     Rex MoRex;
-    xvector<RE2*> MvoAvoidList;
-    xvector<RE2*> MvoAvoidFilesAndDirectoriesList;
-    xvector<RE2*> MvoTargetList;
-    xvector<RE2*> MvoTargetFilesAndDirectoriesList;
+    xvector<xp<RE2>> MvoAvoidList;
+    xvector<xp<RE2>> MvoAvoidFilesAndDirectoriesList;
+    xvector<xp<RE2>> MvoTargetList;
+    xvector<xp<RE2>> MvoTargetFilesAndDirectoriesList;
     xstring MsDirectory = "";
 
     bool MbUseFullPath = false;
@@ -58,6 +59,7 @@ struct Options
     bool MbEntire = false;
     bool MbPiped = false;
     bool MbModify = false;
+    bool MoIncludeLockedFileErros = false;
 
     void SetDirectory(const xstring& FsInput, bool FbUsePassword = false);
     void SetRegex(const xstring& FsInput);

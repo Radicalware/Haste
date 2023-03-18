@@ -12,15 +12,14 @@ class Core
     xvector<xp<File>> MvoFiles; // list of file data (split lines)
     xvector<xstring> MvsFileList; // list of file names in the m_directory
 
-    File* MoPipedDataPtr = nullptr;
-    const RE2 MoBackslashRex = R"(\\)";
+    xp<File> MoFilePtr = nullptr;
+    istatic RE2 SoBackslashRex = R"(\\)";
     const xstring MsPWD = RA::OS::PWD();
 
     void Filter();
 
 public:
     Core(const Options& FoOptions);
-    ~Core();
 
     void PipedScan();
     void ScanFile(xstring& FsPath);

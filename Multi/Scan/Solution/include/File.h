@@ -11,7 +11,7 @@ using std::endl;
 
 struct File
 {
-    inline static const RE2 SoBackslashRex = R"((\\\\))";
+    istatic const RE2 SoBackslashRex = R"((\\\\))";
 
     xstring MsPath = "";
     xstring MsData = "";
