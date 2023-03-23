@@ -4,6 +4,12 @@
 
 ---------------------------------------------------------------------
 
+03/18/2023 >> Haste v7.0.0
+
+Rex added, a regex tool that works similar to that of "sed" on GNU
+
+---------------------------------------------------------------------
+
 03/18/2023 >> Haste v6.8.1
 
 Significant speed increases after Libs update v22.0.4
