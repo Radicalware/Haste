@@ -12,6 +12,8 @@ int main(int argc, char** argv)
     CliArgs.AddAlias('m', "--Minutes");
     CliArgs.AddAlias('h', "--Hours");
     CliArgs.AddAlias('d', "--days");
+    CliArgs.AddAlias('M', "--Months");
+    CliArgs.AddAlias('y', "--Years");
 
     CliArgs.SetArgs(argc, argv);
     
@@ -31,7 +33,12 @@ int main(int argc, char** argv)
             LoStart.ModHour(CliArgs.Key('h').First().To64());
         if(CliArgs.Has('d'))
             LoStart.ModDay(CliArgs.Key('d').First().To64());
+        if(CliArgs.Has('M'))
+            LoStart.ModMonth(CliArgs.Key('M').First().To64());
+        if(CliArgs.Has('y'))
+            LoStart.ModYear(CliArgs.Key('y').First().To64());
         cout << LoStart << endl;
+        cout << LoStart.GetEpochTimeInt() << endl;
     }
 
     FinalRescue();
