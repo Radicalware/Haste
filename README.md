@@ -16,6 +16,8 @@ Rex.exe = Find and Replace
 
 Cipher.exe = Encrypt/Decrypt AES Pass-Codes
 
+EpochTime.exe = Convert from Epoch Time to readable Date-Time output
+
 ## Windows
 
 l.exe = Windows version of ls
