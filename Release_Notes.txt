@@ -4,13 +4,19 @@
 
 ---------------------------------------------------------------------
 
-3/22/2023 >> Haste v8.0.0
+06/27/2025 >> Haste v9.0.0
+
+UServer.ps1 Helps you create dedicated servers for testing
+
+---------------------------------------------------------------------
+
+10/09/2023 >> Haste v8.0.0
 
 EpochTime added to help you convert time
 
 ---------------------------------------------------------------------
 
-3/22/2023 >> Haste v7.0.0
+03/22/2023 >> Haste v7.0.0
 
 Rex added, a regex tool that works similar to that of "sed" on GNU
 
