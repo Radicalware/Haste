@@ -41,9 +41,6 @@ alsr
 
 ## UE
 
-UServer.ps1
-    a. Helps you create dedicated servers for testing
-    b. Helps you configure client game windows on specific screens
 UEBuild.ps1
     * Builds the Game Client
     * Builds the Server
@@ -51,6 +48,12 @@ UEBuild.ps1
 UECook.ps1
     * Cooks the Game Client
     * Cooks the Game Server
+UEDebug.ps1
+    * Bind to the Game Client (VS 2022)
+    * Bind to the Server (VS 2022)
+UServer.ps1
+    a. Helps you create dedicated servers for testing
+    b. Helps you configure client game windows on specific screens
 WipeProject.ps1
     * Clears out all generated files and starts you off clean
 RenameProject.ps1
