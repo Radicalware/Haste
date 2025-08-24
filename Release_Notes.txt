@@ -4,6 +4,19 @@
 
 ---------------------------------------------------------------------
 
+08/24/2025 >> Haste v13.0.0
+
+Created several UE Scripts
+We now have
+    * UEBuild
+    * UECook
+    * UEServer
+    * UEDebug
+    * UEWipeProjecet
+    * RenameProject
+
+---------------------------------------------------------------------
+
 06/27/2025 >> Haste v9.0.0
 
 UServer.ps1 Helps you create dedicated servers for testing

@@ -44,6 +44,18 @@ alsr
 UServer.ps1
     a. Helps you create dedicated servers for testing
     b. Helps you configure client game windows on specific screens
+UEBuild.ps1
+    * Builds the Game Client
+    * Builds the Server
+    * Builds the Editor
+UECook.ps1
+    * Cooks the Game Client
+    * Cooks the Game Server
+WipeProject.ps1
+    * Clears out all generated files and starts you off clean
+RenameProject.ps1
+    * Renames all the files required to change the name of your game
+    * This is much more time-consuming than it sounds w/o/ the script
 
 ****************************************************************************************************
 
