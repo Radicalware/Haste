@@ -61,7 +61,7 @@ private:
 
 		xstring* MsNamePtr;
 		DirType MoType;
-		bool MbHidden;
+		bool MbHidden = false;
 		Files();
 		Files(xstring* FsNamePtr, const DirType& FoType);
 	};
