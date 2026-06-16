@@ -6,7 +6,8 @@
 
 06/27/2025 >> Haste v9.0.0
 
-UServer.ps1 Helps you create dedicated servers for testing
+rex is a new tool to use regular expressions to change output
+rex is similar to sed on Unix
 
 ---------------------------------------------------------------------
 
